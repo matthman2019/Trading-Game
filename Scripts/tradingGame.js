@@ -523,8 +523,11 @@ function* runGame() {
         yield;
 
         manage_text(getMerchantSpeak('introduce', playerShip.city.merchant));
+        setText('<br>', true, false);
         setText(getMerchantSpeak('start', playerShip.city.merchant), true, false);
         yield;
+
+        
 
 
 
