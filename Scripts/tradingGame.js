@@ -382,7 +382,10 @@ function* runGame() {
 
     // make options in optionBox
     // if selectOne, we use radio inputs. if not, we use checkboxes (so they can select more than one)
-    function setOptions(options, selectOne = true) {
+    function askOptions(text, options, selectOne = true) {
+
+        setText(text, true, true);
+                desiredInputType = "choice";
 
         optionBox.innerHTML = '';
         // the creation of new html elements reminds me a lot of Luau's Instance.new()
@@ -446,7 +449,7 @@ function* runGame() {
 
     // I can't believe it! I subconciously started using python function naming conventions!
     // Haha wow. I actually like camel case more than underscores, but I still try to follow the rules with python.
-    function ask_open_ended(question, isNumber = true, max=5, min=0) {
+    function askOpenEnded(question, isNumber = true, max=5, min=0) {
         setText(question, true, true);
         if (isNumber) {
             textInput.type = 'number';
@@ -461,27 +464,40 @@ function* runGame() {
         }
     };
 
-    function hide_inputs() {
+    function hideInputs() {
         textInput.setAttribute('type', 'hidden');
         optionBox.innerHTML = '';
         desiredInputType = undefined;
     }
 
-    function manage_text(text, name='') {
+    function manageText(text, name='') {
         // sometimes this fails (because we haven't initialized playerShip yet) so I have try for this
-        try {manage_footer(playerShip);} catch {}
+        try {manageFooter(playerShip);} catch {}
         
-        hide_inputs();
+        hideInputs();
         setName(name);
         setText(text, true, true);
     }
 
-    function get_text_input() {
+    function getTextInput() {
         return textInput.value;
     }
 
+    // gets selected options. It looks at which options (children of optionBox) are selected, and takes their id.
+    // it takes that id and puts it in optionList to find out what options are actually selected.
+    function getOptions(optionList) {
+        let returnArray = [];
+        for (let option of optionBox.childNodes) {
+            if (option.checked) {
+                returnArray.push(optionList[Number(optionBox.id)]);
+            }
+        }
+
+        return returnArray;
+    }
+
     // manage the footer on the bottom of the screen (update gold, inventory, etc)
-    function manage_footer(playerShip) {
+    function manageFooter(playerShip) {
         footerTable.style.removeProperty("display");
         
         document.getElementById("goldText").innerHTML = "Gold: " + playerShip.money.toString();
@@ -492,19 +508,19 @@ function* runGame() {
     // welcome screen
     //setOptions([new item("Gunpowder"), new item("Ivory"), new item("Cotton Textiles")]);
     //footerTable.style.display = 'none';
-    manage_text("Welcome to Indian Ocean Trading!<br>Created by Matthew Winnat<br>Coded by Matthew Zielinski", 'Welcome!');
+    manageText("Welcome to Indian Ocean Trading!<br>Created by Matthew Winnat<br>Coded by Matthew Zielinski", 'Welcome!');
     yield;
 
 
     // get name
-    ask_open_ended("What is your name?<br>Enter your name in the box below:", false);
+    askOpenEnded("What is your name?<br>Enter your name in the box below:", false);
     yield;
-    let playerName = get_text_input();
+    let playerName = getTextInput();
     
     // make player ship
     // get a random city for our hometown. Then make the starting text.
     let hometownPlace = places[Math.floor(Math.random() * (places.length - 1))];
-    manage_text(`Welcome, ${playerName}.<br>
+    manageText(`Welcome, ${playerName}.<br>
         Your hometown is the city of ${hometownPlace.cityName}, which is on ${hometownPlace.location}.<br>
         It is a city well known for its role in Indian Ocean Trade. You have just created a deal with a friend, <br> 
         ${hometownPlace.merchant}, where he will give you goods to trade for free, asking for half of the profits in return.<br>
@@ -513,18 +529,24 @@ function* runGame() {
     let playerShip = new ship(`${playerName}'s Ship`, [], [], 10, hometownPlace, hometownPlace)
     yield;
 
-    manage_footer(playerShip);
+    manageFooter(playerShip);
     
     // let the game begin!
     
     while (playing) {
-        manage_text(`You are currently in ${playerShip.city.location}, in the city of ${playerShip.city.cityName}.
+        manageText(`You are currently in ${playerShip.city.location}, in the city of ${playerShip.city.cityName}.
             You disembark your ship, and a merchant walks over...`, playerShip.city.cityName);
         yield;
 
-        manage_text(getMerchantSpeak('introduce', playerShip.city.merchant));
+        manageText(getMerchantSpeak('introduce', playerShip.city.merchant));
         setText('<br>', true, false);
         setText(getMerchantSpeak('start', playerShip.city.merchant), true, false);
+        yield;
+
+        askOptions("What would you like to do? You can >>>", ["Trade", "Talk", "Leave"], true);
+        yield;
+
+        console.log(getOptions(["Trade", "Talk", "Leave"]));
         yield;
 
         
@@ -580,6 +602,20 @@ function buttonClick() {
             gameRunner.next();
         } else {
             sectionText.innerHTML = "&darr;&darr;&darr; Please actually type something! &darr;&darr;&darr;";
+        }
+    } else if (desiredInputType == 'choice') {
+        let isOneSelected = false;
+        for (let option of document.getElementById("optionBox").childNodes) {
+            if (option.checked) {
+                isOneSelected = true;
+                break;
+            }
+        }
+
+        if (isOneSelected) {
+            gameRunner.next();
+        } else {
+            sectionText.innerHTML = "&rarr;&rarr; Please select at least one! &rarr;&rarr;";
         }
     }
     
