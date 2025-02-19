@@ -489,7 +489,7 @@ function* runGame() {
         let returnArray = [];
         for (let option of optionBox.childNodes) {
             if (option.checked) {
-                returnArray.push(optionList[Number(optionBox.id)]);
+                returnArray.push(optionList[Number(option.id)]);
             }
         }
 
@@ -503,6 +503,13 @@ function* runGame() {
         document.getElementById("goldText").innerHTML = "Gold: " + playerShip.money.toString();
         document.getElementById("locationText").innerHTML = "Location: " + playerShip.city.cityName;
         document.getElementById("inventoryText").innerHTML = "Inventory: " + playerShip.inventory.toString();
+    }
+
+    function askTrade(question, options, max, min) {
+        askOptions("", options, false);
+        setText("", true, false);
+        askOpenEnded(question, true, max, min);
+        desiredInputType = "trade";
     }
 
     // welcome screen
@@ -534,20 +541,51 @@ function* runGame() {
     // let the game begin!
     
     while (playing) {
+        // talk about where we are and set the scene...
         manageText(`You are currently in ${playerShip.city.location}, in the city of ${playerShip.city.cityName}.
             You disembark your ship, and a merchant walks over...`, playerShip.city.cityName);
         yield;
-
+        
+        // merchant says hi
         manageText(getMerchantSpeak('introduce', playerShip.city.merchant));
         setText('<br>', true, false);
         setText(getMerchantSpeak('start', playerShip.city.merchant), true, false);
         yield;
-
-        askOptions("What would you like to do? You can >>>", ["Trade", "Talk", "Leave"], true);
+        
+        // ask the player's choice of option
+        askOptions("What would you like to do? You can >>>", ["Trade", "Sell", "Leave"], true);
         yield;
 
-        console.log(getOptions(["Trade", "Talk", "Leave"]));
-        yield;
+        // get the player's choice (it's returned as an array, so I just take the [0] of it since they can only choose one thing here)
+        let playerActionChoice = getOptions(["Trade", "Sell", "Leave"])[0];
+        if (playerActionChoice == "Trade") {
+            // make a new list with 3 of every thing in stock (so players can buy more than one if they so choose)
+            let amplifiedStock = [];
+            for (let thing of playerShip.city.stock) {
+                for (let i=0;i<3;i++) {
+                    amplifiedStock.push(thing);
+                }
+            }
+
+            askTrade("Alright! Let's trade. Choose the items you would like to buy:<br>"+
+                "In the box below, put how much currency you would like to add to the trade.",
+                amplifiedStock, playerShip.money, 0)
+            
+            yield;
+            
+            let playerDesire = getOptions(amplifiedStock);
+            let playerDesireMoney = Number(getTextInput());
+            console.log(playerDesire);
+            console.log(playerDesireMoney);
+            yield;
+        
+
+        } else if (playerActionChoice == "Sell") {
+
+        } else if (playerActionChoice == "Leave") {
+
+        }
+        
 
         
 
@@ -603,6 +641,8 @@ function buttonClick() {
         } else {
             sectionText.innerHTML = "&darr;&darr;&darr; Please actually type something! &darr;&darr;&darr;";
         }
+    
+    // if we're looking for a choice, make sure that we actually selected something
     } else if (desiredInputType == 'choice') {
         let isOneSelected = false;
         for (let option of document.getElementById("optionBox").childNodes) {
@@ -616,6 +656,19 @@ function buttonClick() {
             gameRunner.next();
         } else {
             sectionText.innerHTML = "&rarr;&rarr; Please select at least one! &rarr;&rarr;";
+        }
+
+    // why does this exist? IDK, but if I make trades more complex in the future it could be helpful.
+    } else if (desiredInputType == 'trade') {
+        // check that we have a number
+        let value = Number(playerInput.value);
+
+        if (value == NaN || value < playerInput.min || value > playerInput.max) {
+            sectionText.innerHTML = 'Please enter a number below!<br>Max: ' 
+            + playerInput.max.toString() + '<br>Min: '+ playerInput.min.toString();
+            
+        } else {
+            gameRunner.next()
         }
     }
     
