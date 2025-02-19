@@ -514,7 +514,7 @@ function* runGame() {
 
     // welcome screen
     //setOptions([new item("Gunpowder"), new item("Ivory"), new item("Cotton Textiles")]);
-    //footerTable.style.display = 'none';
+    footerTable.style.display = 'none';
     manageText("Welcome to Indian Ocean Trading!<br>Created by Matthew Winnat<br>Coded by Matthew Zielinski", 'Welcome!');
     yield;
 
