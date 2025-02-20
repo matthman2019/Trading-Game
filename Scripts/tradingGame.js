@@ -592,6 +592,11 @@ function* runGame() {
             // get the response and ask what we would like to trade back
             let playerDesiredItems = getOptions(amplifiedStock);
             let playerDesiredCurrency = Number(getTextInput());
+
+            // also break the loop if we asked for nothing
+            if (playerDesiredItems.length == 0 && playerDesiredCurrency == 0) {
+                continue;
+            }
             
             askTrade("Ok! Choose the items (and currency) that you would like to give:<br>"+
                 `(You asked for [${playerDesiredItems.join(", ")}] and ${playerDesiredCurrency.toString()} gold.)`,
