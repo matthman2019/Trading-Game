@@ -502,7 +502,17 @@ function* runGame() {
         
         document.getElementById("goldText").innerHTML = "Gold: " + playerShip.money.toString();
         document.getElementById("locationText").innerHTML = "Location: " + playerShip.city.cityName;
-        document.getElementById("inventoryText").innerHTML = "Inventory: " + playerShip.inventory.toString();
+
+        let playerInventoryStrings = [];
+        for (let item of playerShip.inventory) {
+            try {
+                playerInventoryStrings.push(item.kind);
+            } catch {
+                throw("There is something in the playerInventory lacking an attribute kind."+
+                     "This means that there is probably a string in playerInventory.");
+            }
+        }
+        document.getElementById("inventoryText").innerHTML = "Inventory: " + playerInventoryStrings.join(", ");
     }
 
     function askTrade(question, options, max, min) {
@@ -534,6 +544,7 @@ function* runGame() {
         You accepted his deal, and you are just now preparing to obtain cargo and set sail...`);
 
     let playerShip = new ship(`${playerName}'s Ship`, [], [], 10, hometownPlace, hometownPlace)
+    playerShip.inventory = [new item("Gunpowder"), new item("Ivory"), new item("Cotton Textiles")];
     yield;
 
     manageFooter(playerShip);
@@ -550,6 +561,9 @@ function* runGame() {
         manageText(getMerchantSpeak('introduce', playerShip.city.merchant));
         setText('<br>', true, false);
         setText(getMerchantSpeak('start', playerShip.city.merchant), true, false);
+
+        // also make the merchantTemper (this is used later)
+        let merchantTemper = Math.floor(Math.random() * 4);
         yield;
         
         // ask the player's choice of option
@@ -567,17 +581,102 @@ function* runGame() {
                 }
             }
 
+            // ask what we would like to buy first
             askTrade("Alright! Let's trade. Choose the items you would like to buy:<br>"+
-                "In the box below, put how much currency you would like to add to the trade.",
-                amplifiedStock, playerShip.money, 0)
+                "In the box below, put how much currency you would like to add to the trade.<br>"+
+                "To cancel this trade, click continue without selecting any items or adding currency.",
+                amplifiedStock, 1000, 0)
             
             yield;
             
-            let playerDesire = getOptions(amplifiedStock);
-            let playerDesireMoney = Number(getTextInput());
-            console.log(playerDesire);
-            console.log(playerDesireMoney);
+            // get the response and ask what we would like to trade back
+            let playerDesiredItems = getOptions(amplifiedStock);
+            let playerDesiredCurrency = Number(getTextInput());
+            
+            askTrade("Ok! Choose the items (and currency) that you would like to give:<br>"+
+                `(You asked for [${playerDesiredItems.join(", ")}] and ${playerDesiredCurrency.toString()} gold.)`,
+                playerShip.inventory, playerShip.money, 0
+            )
             yield;
+            
+            // get options and return merchant feedback
+            let playerPaymentItems = getOptions(playerShip.inventory);
+            let playerPaymentCurrency = Number(getTextInput());
+
+            // desired worth is the length of things we want to buy plus currency.
+            // also plus merchantTemper (making us have to trade more sometimes)
+            let desiredWorth = 0;
+            desiredWorth += playerDesiredCurrency + playerPaymentItems.length + merchantTemper;
+
+            // payment worth is trickier. If we're paying things in playerShip.city.stock, add 0.5. If we're paying things in desired, add 3. Else, add 1.
+            // this makes different items worth more or less.
+            // also we add the amount of currency needed
+            let paymentWorth = 0;
+            paymentWorth += playerPaymentCurrency;
+            for (let item of playerPaymentItems) {
+                if (playerShip.city.desired.includes(item)) {paymentWorth += 3}
+                else if (playerShip.city.stock.includes(item)) {paymentWorth += 0.5}
+                else {paymentWorth += 1}
+            }
+
+            // now we evaluate the worths...
+
+            let worthDifference = paymentWorth - desiredWorth;
+            let merchantReaction = ''
+            if (worthDifference > 1) {merchantReaction = 'great deal';} 
+            else if (worthDifference >= 0) {merchantReaction = 'okay deal'}
+            else if (worthDifference >= -2) {merchantReaction = 'meh deal'}
+            else {merchantReaction = 'bad deal'}
+
+            hideInputs();
+            setText(getMerchantSpeak(merchantReaction, playerShip.city.merchant), true, true);
+            yield;
+
+            // now we call off the trade (or continue the trade) based on the merchant's reaction.
+
+            if (worthDifference >= 0) {
+                // see if we finalize the trade or not.
+                askOptions(`Seems that ${playerShip.city.merchant} likes that deal! Would you like to finalize this trade?<br>`+
+                    `You are offering ${playerPaymentItems.join(", ")} and ${playerPaymentCurrency.toString()} for<br>`+
+                    `${playerDesiredItems.join(", ")} and ${playerDesiredCurrency.toString()} gold.`, ["Yes", "No"], true
+                );
+                yield;
+
+                // if we do finalize the trade, DO IT!
+                let finalizeTrade = getOptions(["Yes", "No"])[0];
+                if (finalizeTrade == 'Yes') {
+                    playerShip.money -= playerPaymentCurrency;
+                    playerShip.money += playerDesiredCurrency;
+
+                    let desireItemArray = [];
+                    for (let str of playerDesiredItems) {
+                        desireItemArray.push(new item(str));
+                    }
+                    let paymentItemArray = [];
+                    for (let str of playerPaymentItems) {
+                        paymentItemArray.push(str);
+                    }
+
+                    playerShip.returnItems(paymentItemArray);
+                    playerShip.inventory = playerShip.inventory.concat(desireItemArray);
+                    manageFooter(playerShip);
+                    manageText("Great! The trade was completed successfully.","Success!");
+                    console.log(playerShip.inventory);
+                    yield;
+                }
+                else {
+                    setText("Alright then! The trade was not completed.", true, true);
+                    yield;
+                }
+            } else if (merchantReaction = 'meh deal'){
+                setText(`It seems that ${playerShip.city.merchant} didn't like that trade, but it seemed like they were willing to negotiate.<br>`+
+                    `Maybe if you offer a little bit more next time they will accept!`, true, true);
+                yield;
+            } else if (merchantReaction = 'bad deal') {
+                setText(`Seems that ${playerShip.city.merchant} didn't like that trade. Try offering more next time!`, true, true);
+                yield;
+            }
+
         
 
         } else if (playerActionChoice == "Sell") {
