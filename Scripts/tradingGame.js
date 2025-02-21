@@ -364,6 +364,7 @@ class ship {
 // edit: yes it works!
 
 let desiredInputType = undefined;
+let points = 0;
 
 function* runGame() {
 
@@ -509,17 +510,8 @@ function* runGame() {
         
         document.getElementById("goldText").innerHTML = "Gold: " + playerShip.money.toString();
         document.getElementById("locationText").innerHTML = "Location: " + playerShip.city.cityName;
-
-        let playerInventoryStrings = [];
-        for (let item of playerShip.inventory) {
-            try {
-                playerInventoryStrings.push(item.kind);
-            } catch {
-                throw("There is something in the playerInventory lacking an attribute kind."+
-                     "This means that there is probably a string in playerInventory.");
-            }
-        }
-        document.getElementById("inventoryText").innerHTML = "Inventory: " + playerInventoryStrings.join(", ");
+        document.getElementById("inventoryText").innerHTML = "Inventory: " + itemArrayToString(playerShip.inventory);
+        document.getElementById("pointText").innerHTML = "Points: " + points;
     }
 
     function askTrade(question, options, max, min) {
@@ -864,7 +856,7 @@ function* runGame() {
                     );
                     yield;
 
-                    // if we do finalize, DO IT!
+                    // if we do finalize, DO IT! (Also change points)
                     let finalizeLoad = getOptions(["Yes", "No"])[0];
                     if (finalizeLoad == 'Yes') {
                         let desireItemArray = [];
@@ -873,7 +865,7 @@ function* runGame() {
                         }
 
                         playerShip.inventory = playerShip.inventory.concat(desireItemArray);
-                        manageFooter(playerShip);
+                        points -= desireItemArray.length;
                         manageText("Great! You loaded on your cargo.","Success!");
                         yield;
                     }
@@ -912,8 +904,15 @@ function* runGame() {
                     let finalizeLoad = getOptions(["Yes", "No"])[0];
                     if (finalizeLoad == 'Yes') {
                         let desireItemArray = [];
+
+                        // also we need to change points. Stock items are worth 1 point, desired items are 3 points, and normal items are 1 point.
                         for (let str of playerDesiredItems) {
                             desireItemArray.push(new item(str));
+                            if (playerShip.city.desired.includes(str)) {
+                                points += 3;
+                            } else{
+                                points += 1;
+                            }
                         }
 
                         playerShip.returnItems(desireItemArray);
@@ -929,14 +928,16 @@ function* runGame() {
                 
 
                 } else if (playerActionChoice == "Exchange Currency") {
-                    // get the item that the player wants to sell
+                    // get the amount that the player wants to exchange
                     askOpenEnded("Ok! How much gold would you like?<br>"+
                         "You can put a negative number to give gold back home if you'd like.", 
                         true, 100 - playerShip.money, -playerShip.money);
                     yield;
                     
+                    // change money and points accordingly. (You earn points by giving money back)
                     let moneyExchange = Number(getTextInput());
                     playerShip.money += moneyExchange;
+                    points -= moneyExchange;
                     manageText(`Great! You exchanged ${moneyExchange.toString()} gold successfully.`);
                     yield;
 
