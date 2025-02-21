@@ -402,13 +402,28 @@ class ship {
 
 // edit: yes it works!
 
+// these variables are globals that I need to define in the global scope.
+// (Points doesn't have to be global but it's here anyway)
 let desiredInputType = undefined;
 let points = 0;
 let playerShipHomeland = undefined;
 
+// these are things specifically for devMode
+let startingInventory = [];
+let startingGold = 5;
+
+/*   //this gives you one of every item
+for (let i of itemKinds) {
+    startingInventory.push(new item(i));
+}
+yield;
+*/
+
+
+
 
 // this little variable checks for cookies, to see if we have played the game before.
-let checkForCookies = false;
+let checkForCookies = true;
 
 function* runGame() {
 
@@ -428,6 +443,7 @@ function* runGame() {
 
     // make options in optionBox
     // if selectOne, we use radio inputs. if not, we use checkboxes (so they can select more than one)
+    const yesNoArray = ["Yes", "No"];
     function askOptions(text, options, selectOne = true) {
 
         setText(text, true, true);
@@ -553,6 +569,7 @@ function* runGame() {
     // this also manages cookies.
     function manageFooter(playerShip) {
         footerTable.style.removeProperty("display");
+        footerTable.parentElement.style.height = 'auto';
 
         let gold = playerShip.money.toString();
         let location = playerShip.city.cityName;
@@ -623,32 +640,23 @@ function* runGame() {
             <br>This site doesn't collect anything else through cookies.<br>
             By clicking continue (to continue the game) you agree to this.`, 'Welcome!', false);
             footerTable.style.display = 'none';
+            footerTable.parentElement.style.height = '10%';
         yield;
-
-
-        // get name
-        askOpenEnded("What is your name?<br>Enter your name in the box below:", false);
-        yield;
-        let playerName = getTextInput();
         
         // make player ship
         // get a random city for our hometown. Then make the starting text.
         // the array places has objects inside of it, but they aren't city objects. That's why I make a city with its cityName.
         hometownPlace = new city(places[Math.floor(Math.random() * (places.length - 1))].cityName);
         playerShipHomeland = hometownPlace;
-        manageText(`Welcome, ${playerName}.<br>
+        manageText(`Welcome!<br>
             Your hometown is the city of ${hometownPlace.cityName}, which is on ${hometownPlace.location}.<br>
             It is a city well known for its role in Indian Ocean Trade. You have just created a deal with a friend, <br> 
             ${hometownPlace.merchant}, where he will give you goods to trade for free, asking for half of the profits in return.<br>
             You accepted his deal, and you are just now preparing to obtain cargo and set sail...`, '', false);
 
-        playerShip = new ship(`${playerName}'s Ship`, [], [], 10, hometownPlace, hometownPlace);
-        for (let i of itemKinds) {
-            playerShip.inventory.push(new item(i));
-        }
-        yield;
-
+        playerShip = new ship(`Player's Ship`, startingInventory, [], 5, hometownPlace, hometownPlace);
         manageFooter(playerShip);
+        yield;
 
     } else {
         // we HAVE played before, so set up everything based on what we find in the cookies.
@@ -660,7 +668,7 @@ function* runGame() {
 
         playerShipHomeland = hometownPlace;
 
-        playerShip = new ship("We don't save player name's ship", savedInventory, [], savedGold, savedLocation, hometownPlace);
+        playerShip = new ship("Player's ship", savedInventory, [], savedGold, savedLocation, hometownPlace);
 
         manageText("Welcome back! Your progress was loaded successfully.", "Welcome!");
         yield;
@@ -686,7 +694,7 @@ function* runGame() {
 
             // also make the merchantTemper and merchantBonus (these is used later, for price fluctuations)
             // merchantTemper makes a merchant charge more in trades, and merchantBonus makes a merchant charge less for selling
-            let merchantTemper = Math.floor(Math.random() * 4);
+            let merchantTemper = Math.floor(Math.random() * 2);
             let merchantBonus = Math.floor(Math.random() * 10);
             if (merchantBonus != 1) {
                 merchantBonus = 0;
@@ -741,7 +749,7 @@ function* runGame() {
                     // desired worth is the length of things we want to buy plus currency.
                     // also plus merchantTemper (making us have to trade more sometimes)
                     let desiredWorth = 0;
-                    desiredWorth += playerDesiredCurrency + playerPaymentItems.length + merchantTemper;
+                    desiredWorth += playerDesiredCurrency + playerDesiredItems.length + merchantTemper;
 
                     // payment worth is trickier. If we're paying things in playerShip.city.stock, add 0.5. If we're paying things in desired, add 3. Else, add 1.
                     // this makes different items worth more or less.
@@ -749,7 +757,7 @@ function* runGame() {
                     let paymentWorth = 0;
                     paymentWorth += playerPaymentCurrency;
                     for (let item of playerPaymentItems) {
-                        if (playerShip.city.desired.includes(item)) {paymentWorth += 3}
+                        if (playerShip.city.desired.includes(item)) {paymentWorth += 3;console.log('desired')}
                         else if (playerShip.city.stock.includes(item)) {paymentWorth += 0.5}
                         else {paymentWorth += 1}
                     }
@@ -763,6 +771,11 @@ function* runGame() {
                     else if (worthDifference >= -2) {merchantReaction = 'meh deal'}
                     else {merchantReaction = 'bad deal'}
 
+                    console.log()
+                    console.log(paymentWorth);
+                    console.log(desiredWorth);
+                    
+
                     manageText(getMerchantSpeak(merchantReaction, playerShip.city.merchant));
                     yield;
 
@@ -772,12 +785,12 @@ function* runGame() {
                         // see if we finalize the trade or not.
                         askOptions(`Seems that ${playerShip.city.merchant} likes that deal! Would you like to finalize this trade?<br>`+
                             `You are offering ${itemArrayToString(playerPaymentItems)} and ${playerPaymentCurrency.toString()} for<br>`+
-                            `${playerDesiredItems.join(", ")} and ${playerDesiredCurrency.toString()} gold.`, ["Yes", "No"], true
+                            `${playerDesiredItems.join(", ")} and ${playerDesiredCurrency.toString()} gold.`, yesNoArray, true
                         );
                         yield;
 
                         // if we do finalize the trade, DO IT!
-                        let finalizeTrade = getOptions(["Yes", "No"])[0];
+                        let finalizeTrade = getOptions(yesNoArray)[0];
                         if (finalizeTrade == 'Yes') {
                             playerShip.money -= playerPaymentCurrency;
                             playerShip.money += playerDesiredCurrency;
@@ -829,7 +842,7 @@ function* runGame() {
                         merchantReaction = 'supply'; merchantPrice = 1 ;
                         merchantBonus -= 1;
                     } 
-                    else if (playerShip.city.desired.includes(chosenOption + merchantBonus)) {
+                    else if (playerShip.city.desired.includes(chosenOption)) {
                         merchantReaction = 'high demand'; merchantPrice = 3 + merchantBonus;
                         merchantBonus -= 0;
                     }
@@ -851,12 +864,12 @@ function* runGame() {
                     // does the player want to accept?
                     askOptions("Do you want to accept?<br>" +
                         `(${playerShip.city.merchant} is offering you ${merchantPrice.toString()} gold.)`,
-                        ["Yes", "No"],
+                        yesNoArray,
                         true
                     );
                     yield;
 
-                    let finalizeSale = getOptions(["Yes", "No"])[0];
+                    let finalizeSale = getOptions(yesNoArray)[0];
                     if (finalizeSale == "Yes") {
                         playerShip.returnItems([chosenItem]);
                         playerShip.money += merchantPrice;
@@ -870,12 +883,12 @@ function* runGame() {
 
                 } else if (playerActionChoice == "Leave") {
                     askOptions("Are you sure you want to leave?<br>You will have to sail somewhere else if you say yes.",
-                        ["Yes", "No"],
+                        yesNoArray,
                         true
                     );
                     yield;
 
-                    let finalizeLeave = getOptions(["Yes", "No"])[0];
+                    let finalizeLeave = getOptions(yesNoArray)[0];
                     if (finalizeLeave == "Yes") {  
                         trading = false;
                         askOptions("Time to set sail!<br>Where would you like to go next?",
@@ -900,6 +913,49 @@ function* runGame() {
             }
         // that was long. now to program what happens if we're in our hometown! (Oh boy)
         } else {
+            
+            // since we start in our hometown, we only need to check for tutorial in the hometown
+            // see if the player wants a quick tutorial
+            if (!playedBefore) {
+                askOptions("It seems that you are new to this game! Would you like a quick tutorial?",
+                    yesNoArray,
+                    true
+                )
+                yield;
+
+                playedBefore = true;
+
+                if (getOptions(yesNoArray)[0] == 'Yes') {
+                    manageText(`Alright! In this game, you are a merchant who trades in the Indian Ocean.<br>
+                        You can buy and sell things in ports from Italy to China! Certain ports desire items more than others,<br>
+                        and your port is no exception! Click the button below that says "homeland details".<br><br><br>
+                        
+                        I can't force you to click it, but I really recommend it. Your hometown is ${playerShip.city.cityName}, 
+                        which as you can see you are in right now. (Look at the location label below).<br>
+                        Your job, as a trader, is to take items from your hometown and sell them elsewhere to make profit.<br>
+                        In this game profit is represented with points. You gain points by dropping off items you earned at your hometown.<br>
+                        Not all items are equal! Most items earn you one point by dropping off,<br>
+                        but items in the "desired" list are worth 3 points! Dropping off desired items is the only way to make a net profit overall.<br>
+                        You can return other items to your hometown, but they only earn you 1 point.<br><br>
+
+                        To get desired items, you need to go to other cities and trade with them. Some cities will sell items in your "desired" list,<br>
+                        But they won't sell them for free! You will have to trade with them. They too have a desired list,<br>
+                        and they will offer you more items in trades if you offer them desired items. You don't know their desired list,<br>
+                        but on average the further you ship goods, the more likely they are to be desired.<br>
+                        Ideally, you want to find a place that desires something your hometown sells (I'll get to that in a minute).<br>
+                        Also, most places usually desire <i>something</i> from China (Hangzhou).<br><br>
+
+                        You are a starting merchant. You have a little gold and no items currently.<br>
+                        To get items, you need to get them from your hometown. You can see what items your hometown has in the "stock" list.<br>
+                        Your hometown will give these items to you without charge, but they decrease your points!<br>
+                        Remember, to increase your points you need to drop off items at your hometown. You must to sail to other cities<br>
+                        and trade to earn desired items for your hometown. Sail back home and drop them off, and your points will increase!<br>
+                        Keep doing this and you will become rich with in-game points. Good luck!
+
+                        `, 'Tutorial');
+                        yield;
+                }
+            }
 
             manageText(`You are currently in the city of ${playerShip.city.cityName} of ${playerShip.city.location}, which is your hometown!
                 You disembark your ship, and a merchant you recognize walks over...`, playerShip.city.cityName);
@@ -946,13 +1002,13 @@ function* runGame() {
             
                     // see if we finalize the trade or not.
                     askOptions(`You are going to load [${playerDesiredItems.join(", ")}] onto your ship. Is this correct?`,
-                        ["Yes", "No"], 
+                        yesNoArray, 
                         true
                     );
                     yield;
 
                     // if we do finalize, DO IT! (Also change points)
-                    let finalizeLoad = getOptions(["Yes", "No"])[0];
+                    let finalizeLoad = getOptions(yesNoArray)[0];
                     if (finalizeLoad == 'Yes') {
                         let desireItemArray = [];
                         for (let str of playerDesiredItems) {
@@ -990,20 +1046,22 @@ function* runGame() {
             
                     // see if we finalize the trade or not.
                     askOptions(`You are going to unload [${itemArrayToString(playerDesiredItems)}] off of your ship. Is this correct?`,
-                        ["Yes", "No"], 
+                        yesNoArray, 
                         true
                     );
                     yield;
 
                     // if we do finalize, DO IT!
-                    let finalizeLoad = getOptions(["Yes", "No"])[0];
+                    let finalizeLoad = getOptions(yesNoArray)[0];
                     if (finalizeLoad == 'Yes') {
 
                         // also we need to change points. Stock items are worth 1 point, desired items are 3 points, and normal items are 1 point.
                         for (let item of playerDesiredItems) {
                             if (playerShip.city.desired.includes(item.kind)) {
                                 points += 3;
-                            } else{
+                            } else if (playerShip.city.stock.includes(item.kind)) {
+                                points += 1;
+                            } else {
                                 points += 1;
                             }
                         }
@@ -1036,12 +1094,12 @@ function* runGame() {
 
                 } else if (playerActionChoice == "Leave") {
                     askOptions("Are you sure you want to leave?<br>You will have to sail somewhere else if you say yes.",
-                        ["Yes", "No"],
+                        yesNoArray,
                         true
                     );
                     yield;
 
-                    let finalizeLeave = getOptions(["Yes", "No"])[0];
+                    let finalizeLeave = getOptions(yesNoArray)[0];
                     if (finalizeLeave == "Yes") {  
                         trading = false;
                         askOptions("Time to set sail!<br>Where would you like to go next?",
@@ -1054,6 +1112,7 @@ function* runGame() {
                         manageText(`Ok! Setting sail for ${playerDestinationString}!`);
                         setText("<img src='https://attic.sh/6r9b91eba6dyrshvlnutat6auqom' style='width:300px;height:300px'>");
                         playerShip.city = new city(playerDestinationString);
+                        console.log(playerShip.city.cityName);
                         yield;
 
 
