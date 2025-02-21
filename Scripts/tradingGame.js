@@ -451,8 +451,11 @@ function* runGame() {
 
     // I can't believe it! I subconciously started using python function naming conventions!
     // Haha wow. I actually like camel case more than underscores, but I still try to follow the rules with python.
-    function askOpenEnded(question, isNumber = true, max=5, min=0) {
+    function askOpenEnded(question, isNumber = true, max=5, min=0, clearOptionBox=true) {
         setText(question, true, true);
+        if (clearOptionBox) {
+            optionBox.innerHTML = '';
+        }
         if (isNumber) {
             textInput.value = "0";
             textInput.type = 'number';
@@ -465,6 +468,7 @@ function* runGame() {
             textInput.type = 'text'
             desiredInputType = 'string';
         }
+
     };
 
     function hideInputs() {
@@ -521,14 +525,37 @@ function* runGame() {
     function askTrade(question, options, max, min) {
         askOptions("", options, false);
         setText("", true, false);
-        askOpenEnded(question, true, max, min);
+        askOpenEnded(question, true, max, min, false);
         desiredInputType = "trade";
+    }
+
+    function itemArrayToString(items, separator=', ') {
+        let returnArray = [];
+        for (let thing of items) {
+            switch (thing.constructor.name) {
+                case 'item':
+                    returnArray.push(thing.kind);
+                    break;
+                case 'technology':
+                    returnArray.push(thing.kind);
+                    break;
+                case 'String':
+                    returnArray.push(thing);
+                    break;
+                default:
+                    returnArray.push(thing);
+                    console.warn("Something is in items that is not a string, technology, or item. Expect trouble!");
+            }
+        }
+
+        return returnArray.join(separator);
     }
 
     // welcome screen
     //setOptions([new item("Gunpowder"), new item("Ivory"), new item("Cotton Textiles")]);
     footerTable.style.display = 'none';
     manageText("Welcome to Indian Ocean Trading!<br>Created by Matthew Winnat<br>Coded by Matthew Zielinski", 'Welcome!');
+    itemArrayToString(["Yomamma", new item("Cotton Textiles"), new technology("Junk Ship")]);
     yield;
 
 
@@ -541,7 +568,6 @@ function* runGame() {
     // get a random city for our hometown. Then make the starting text.
     // the array places has objects inside of it, but they aren't city objects. That's why I make a city with its cityName.
     let hometownPlace = new city(places[Math.floor(Math.random() * (places.length - 1))].cityName);
-    console.log(hometownPlace);
     manageText(`Welcome, ${playerName}.<br>
         Your hometown is the city of ${hometownPlace.cityName}, which is on ${hometownPlace.location}.<br>
         It is a city well known for its role in Indian Ocean Trade. You have just created a deal with a friend, <br> 
@@ -658,7 +684,7 @@ function* runGame() {
                     if (worthDifference >= 0) {
                         // see if we finalize the trade or not.
                         askOptions(`Seems that ${playerShip.city.merchant} likes that deal! Would you like to finalize this trade?<br>`+
-                            `You are offering ${playerPaymentItems.join(", ")} and ${playerPaymentCurrency.toString()} for<br>`+
+                            `You are offering ${itemArrayToString(playerPaymentItems)} and ${playerPaymentCurrency.toString()} for<br>`+
                             `${playerDesiredItems.join(", ")} and ${playerDesiredCurrency.toString()} gold.`, ["Yes", "No"], true
                         );
                         yield;
@@ -674,8 +700,8 @@ function* runGame() {
                                 desireItemArray.push(new item(str));
                             }
                             let paymentItemArray = [];
-                            for (let str of playerPaymentItems) {
-                                paymentItemArray.push(str);
+                            for (let item of playerPaymentItems) {
+                                paymentItemArray.push(item);
                             }
 
                             playerShip.returnItems(paymentItemArray);
@@ -815,9 +841,10 @@ function* runGame() {
                     }
 
                     // ask what we would like to get
-                    askOptions("Alright! Let's load some cargo. Choose the items you would like to recieve" +
+                    askOptions("Alright! Let's load some cargo. Choose the items you would like to recieve.<br>" +
                         "To cancel this, click continue without selecting any items or adding currency.",
                         amplifiedStock, false);
+                    desiredInputType = "cargoLoad";
                     
                     yield;
                     
@@ -825,13 +852,13 @@ function* runGame() {
                     let playerDesiredItems = getOptions(amplifiedStock);
 
                     // also break the loop if we asked for nothing
-                    if (playerDesiredItems.length == 0 && playerDesiredCurrency == 0) {
+                    if (playerDesiredItems.length == 0) {
                         continue;
                     }
                     
             
                     // see if we finalize the trade or not.
-                    askOptions(`You are going to load [${playerDesiredItems.join(", ")}] onto your ship. Is this correct?`
+                    askOptions(`You are going to load [${playerDesiredItems.join(", ")}] onto your ship. Is this correct?`,
                         ["Yes", "No"], 
                         true
                     );
@@ -861,6 +888,7 @@ function* runGame() {
                     askOptions("Alright! Let's unload some cargo. Choose the items you would like to unload.<br>" +
                         "To cancel this, click continue without selecting any items or adding currency.",
                         playerShip.inventory, false);
+                    desiredInputType = "cargoLoad";
                     
                     yield;
                     
@@ -868,13 +896,13 @@ function* runGame() {
                     let playerDesiredItems = getOptions(playerShip.inventory);
 
                     // also break the loop if we asked for nothing
-                    if (playerDesiredItems.length == 0 && playerDesiredCurrency == 0) {
+                    if (playerDesiredItems.length == 0) {
                         continue;
                     }
                     
             
                     // see if we finalize the trade or not.
-                    askOptions(`You are going to unload [${playerDesiredItems.join(", ")}] off of your ship. Is this correct?`
+                    askOptions(`You are going to unload [${itemArrayToString(playerDesiredItems)}] off of your ship. Is this correct?`,
                         ["Yes", "No"], 
                         true
                     );
@@ -909,7 +937,7 @@ function* runGame() {
                     
                     let moneyExchange = Number(getTextInput());
                     playerShip.money += moneyExchange;
-                    manageText(`Great! You exchanged ${moneyExchange.toString()} gold successfully`);
+                    manageText(`Great! You exchanged ${moneyExchange.toString()} gold successfully.`);
                     yield;
 
                 } else if (playerActionChoice == "Leave") {
@@ -1005,7 +1033,8 @@ function buttonClick() {
             sectionText.innerHTML = "&rarr;&rarr; Please select at least one! &rarr;&rarr;";
         }
 
-    // why does this exist? IDK, but if I make trades more complex in the future it could be helpful.
+    // why does this exist? IDK, but if I make trades more complex in the future it could be helpful. 
+    // Right now it is the same as desiredInputType='number'
     } else if (desiredInputType == 'trade') {
         // check that we have a number
         let value = Number(playerInput.value);
@@ -1015,8 +1044,11 @@ function buttonClick() {
             + playerInput.max.toString() + '<br>Min: '+ playerInput.min.toString();
             
         } else {
-            gameRunner.next()
+            gameRunner.next();
         }
+    // cargoLoad doesn't require anything at all, since if we add no options we just cancel.
+    } else if (desiredInputType == 'cargoLoad') {
+        gameRunner.next();
     }
     
     
