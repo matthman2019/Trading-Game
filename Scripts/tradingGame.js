@@ -57,16 +57,16 @@ const technologyKinds = new Array(
 // This took a couple attempts to generate right
 
 const places = new Array(
-    { cityName: "Zanzibar", location: "The Swahili Coast", stock: ['Gold', 'Ivory', 'Spices', 'Animal Skins', 'Timber'], desired: ['Gold', 'Ivory', 'Spices', 'Animal Skins', 'Timber'], tech: ['Gold', 'Ivory', 'Spices', 'Animal Skins', 'Timber'], destinations: ['Venice', 'Persia', 'Egypt', 'Calicut', 'Kilwa', 'Gujarat'] },
-    { cityName: "Venice", location: "The Italian Peninsula", stock: ['Silver', 'Wine', 'Wool Textiles', 'Salt'], desired: ['Silver', 'Wine', 'Wool Textiles', 'Salt'], tech: ['Silver', 'Wine', 'Wool Textiles', 'Salt'], destinations: ['Egypt', 'Persia'] },
-    { cityName: "Hambantota", location: "Sri Lanka", stock: ['Spices', 'Ivory', 'Gems', 'Pearls', 'Cotton Textiles'], desired: ['Spices', 'Ivory', 'Gems', 'Pearls', 'Cotton Textiles'], tech: ['Spices', 'Ivory', 'Gems', 'Pearls', 'Cotton Textiles'], destinations: ['Persia', 'Calicut', 'Gujarat', 'Malacca'] },
-    { cityName: "Egypt", location: "The Red Sea", stock: ['Gold', 'Horses', 'Incense', 'Pearls', 'Silver'], desired: ['Gold', 'Horses', 'Incense', 'Pearls', 'Silver'], tech: ['Gold', 'Horses', 'Incense', 'Pearls', 'Silver'], destinations: ['Kilwa', 'Persia', 'Calicut', 'Gujarat'] },
-    { cityName: "Persia", location: "The Persian Gulf", stock: ['Carpets', 'Horses', 'Incense', 'Pearls', 'Silver', 'Dyes', 'Steel Swords'], desired: ['Carpets', 'Horses', 'Incense', 'Pearls', 'Silver', 'Dyes', 'Steel Swords'], tech: ['Carpets', 'Horses', 'Incense', 'Pearls', 'Silver', 'Dyes', 'Steel Swords'], destinations: ['Kilwa', 'Egypt', 'Calicut', 'Gujarat'] },
-    { cityName: "Malacca", location: "The Malaccan Strait", stock: ['Gems', 'Pepper', 'Pearls', 'Spices', 'Timber'], desired: ['Gems', 'Pepper', 'Pearls', 'Spices', 'Timber'], tech: ['Gems', 'Pepper', 'Pearls', 'Spices', 'Timber'], destinations: ['Calicut', 'Gujarat', 'Hambantota', 'Hangzhou'] },
-    { cityName: "Kilwa", location: "The Swahili Coast", stock: ['Gold', 'Ivory'], desired: ['Gold', 'Ivory'], tech: ['Gold', 'Ivory'], destinations: ['Egypt', 'Calicut', 'Gujarat', 'Malacca'] },
-    { cityName: "Hangzhou", location: "China", stock: ['Silk', 'Porcelain', 'Metals', 'Gunpowder', 'Tea', 'Rice'], desired: ['Silk', 'Porcelain', 'Metals', 'Gunpowder', 'Tea', 'Rice'], tech: ['Silk', 'Porcelain', 'Metals', 'Gunpowder', 'Tea', 'Rice'], destinations: ['Malacca'] },
-    { cityName: "Gujarat", location: "India", stock: ['Cotton Textiles', 'Pepper', 'Steel Swords', 'Gold', 'Gems', 'Dye', 'Silk', 'Spices'], desired: ['Cotton Textiles', 'Pepper', 'Steel Swords', 'Gold', 'Gems', 'Dye', 'Silk', 'Spices'], tech: ['Cotton Textiles', 'Pepper', 'Steel Swords', 'Gold', 'Gems', 'Dye', 'Silk', 'Spices'], destinations: ['Hambantota', 'Zanzibar', 'Venice', 'Egypt', 'Persia', 'Malacca', 'Kilwa', 'Calicut'] },
-    { cityName: "Calicut", location: "India", stock: ['Cotton Textiles', 'Pepper', 'Gold', 'Gems', 'Steel Swords', 'Dye', 'Silk', 'Spices'], desired: ['Cotton Textiles', 'Pepper', 'Gold', 'Gems', 'Steel Swords', 'Dye', 'Silk', 'Spices'], tech: ['Cotton Textiles', 'Pepper', 'Gold', 'Gems', 'Steel Swords', 'Dye', 'Silk', 'Spices'], destinations: ['Hambantota', 'Zanzibar', 'Venice', 'Egypt', 'Persia', 'Malacca', 'Kilwa', 'Gujarat'] },
+    {cityName : 'Zanzibar', location : 'Swahili Coast',stock : ['Gold', 'Ivory', 'Spices', 'Animal Skins', 'Timber'],desired : ['Porcelain', 'Silk', 'Rice', 'Tea', 'Spices', 'Cotton Textiles', 'Gems', 'Incense', 'Steel Swords'],tech : [],destinations : ['Venice', 'Persia', 'Egypt', 'Calicut', 'Kilwa', 'Gujarat']},
+    {cityName : 'Venice', location : 'Mediterranean',stock : ['Silver', 'Wine', 'Wool Textiles', 'Salt'],desired : ['Gold', 'Silk', 'Silver', 'Pepper', 'Porcelain', 'Timber', 'Spices', 'Pearls'],tech : ['Dhow Ships', 'Lanteen Sail'],destinations : ['Egypt', 'Persia']},
+    {cityName : 'Hambantota', location : 'Sri Lanka',stock : ['Spices', 'Ivory', 'Gems', 'Pearls', 'Cotton Textiles'],desired : ['Horses', 'Porcelain', 'Gold', 'Silk', 'Silver'],tech : [],destinations : ['Persia', 'Calicut', 'Gujarat', 'Malacca']},
+    {cityName : 'Egypt', location : 'The Red Sea',stock : ['Gold', 'Horses', 'Incense', 'Pearls', 'Silver'],desired : ['Cotton Textiles', 'Ivory', 'Spices', 'Pepper', 'Porcelain', 'Gems'],tech : ['Lanteen Sail'],destinations : ['Kilwa', 'Persia', 'Calicut', 'Gujarat']},
+    {cityName : 'Persia', location : 'Persian Gulf',stock : ['Carpets', 'Horses', 'Incense', 'Pearls', 'Silver', 'Dyes', 'Steel Swords'],desired : ['Cotton Textiles', 'Ivory', 'Percelain', 'Spices', 'Pepper'],tech : ['Lanteen Sail', 'Astrolabe'],destinations : ['Kilwa', 'Egypt', 'Calicut', 'Gujarat']},
+    {cityName : 'Malacca', location : 'Malaccan Strait',stock : ['Gems', 'Pepper', 'Pearls', 'Spices', 'Timber'],desired : ['Cotton Textiles', 'Ivory', 'Incense', 'Silk', 'Porcelain', 'Sugar Cultivation Knowledge'],tech : [],destinations : ['Calicut', 'Gujarat', 'Hambantota', 'Hangzhou']},
+    {cityName : 'Kilwa', location : 'Swahili Coast',stock : ['Gold', 'Ivory'],desired : ['Cotton Textiles', 'Pearls', 'Porcelain', 'Gems', 'Pepper', 'Spices'],tech : [],destinations : ['Egypt', 'Calicut', 'Gujarat', 'Malacca']},
+    {cityName : 'Hangzhou', location : 'China',stock : ['Silk', 'Porcelain', 'Metals', 'Gunpowder', 'Tea', 'Rice'],desired : ['Spices', 'Ivory', 'Pepper', 'Salt', 'Gold'],tech : ['Magnetic Compass', 'Stern Rudder', 'Junk Ship'],destinations : ['Malacca']},
+    {cityName : 'Gujarat', location : 'India',stock : ['Cotton Textiles', 'Pepper', 'Steel Swords', 'Gold', 'Gems', 'Dye', 'Silk', 'Spices'],desired : ['Incense', 'Porcelain', 'Sugar Cultivation Knowledge', 'Timber', 'Ivory'],tech : ['Lanteen Sail'],destinations : ['Hambantota', 'Zanzibar', 'Venice', 'Egypt', 'Persia', 'Malacca', 'Kilwa', 'Calicut']},
+    {cityName : 'Calicut', location : 'India',stock : ['Cotton Textiles', 'Pepper', 'Gold', 'Gems', 'Steel Swords', 'Dye', 'Silk', 'Spices'],desired : ['Incense', 'Ivory', 'Porcelain', 'Sugar Cultivation Knowledge', 'Timber'],tech : ['Lanteen Sail'],destinations : ['Hambantota', 'Zanzibar', 'Venice', 'Egypt', 'Persia', 'Malacca', 'Kilwa', 'Gujarat']}
 );
 
 // I am far too lazy to actually write a merchant property for each of these places
@@ -364,6 +364,7 @@ class ship {
 
 let desiredInputType = undefined;
 let points = 0;
+let playerShipHomeland = undefined;
 
 function* runGame() {
 
@@ -545,7 +546,6 @@ function* runGame() {
     // welcome screen
     footerTable.style.display = 'none';
     manageText("Welcome to Indian Ocean Trading!<br>Created by Matthew Winnat<br>Coded by Matthew Zielinski", 'Welcome!');
-    itemArrayToString(["Yomamma", new item("Cotton Textiles"), new technology("Junk Ship")]);
     yield;
 
 
@@ -558,6 +558,7 @@ function* runGame() {
     // get a random city for our hometown. Then make the starting text.
     // the array places has objects inside of it, but they aren't city objects. That's why I make a city with its cityName.
     let hometownPlace = new city(places[Math.floor(Math.random() * (places.length - 1))].cityName);
+    playerShipHomeland = hometownPlace;
     manageText(`Welcome, ${playerName}.<br>
         Your hometown is the city of ${hometownPlace.cityName}, which is on ${hometownPlace.location}.<br>
         It is a city well known for its role in Indian Ocean Trade. You have just created a deal with a friend, <br> 
@@ -903,19 +904,17 @@ function* runGame() {
                     // if we do finalize, DO IT!
                     let finalizeLoad = getOptions(["Yes", "No"])[0];
                     if (finalizeLoad == 'Yes') {
-                        let desireItemArray = [];
 
                         // also we need to change points. Stock items are worth 1 point, desired items are 3 points, and normal items are 1 point.
-                        for (let str of playerDesiredItems) {
-                            desireItemArray.push(new item(str));
-                            if (playerShip.city.desired.includes(str)) {
+                        for (let item of playerDesiredItems) {
+                            if (playerShip.city.desired.includes(item.kind)) {
                                 points += 3;
                             } else{
                                 points += 1;
                             }
                         }
 
-                        playerShip.returnItems(desireItemArray);
+                        playerShip.returnItems(playerDesiredItems);
                         manageFooter(playerShip);
                         manageText("Great! You unloaded your cargo with no issues.","Success!");
                         yield;
@@ -1065,6 +1064,12 @@ textInput.addEventListener('keypress', function(event) {
         event.preventDefault();
         continueB.click();
     }
+});
+
+let homelandInfoButton = document.getElementById("homelandButton");
+homelandInfoButton.addEventListener("click", ()=>{
+    window.alert(`Here's a little info on your homeland:\nHomeland: ${playerShipHomeland.cityName}\nStock: [${playerShipHomeland.stock}]\n`+
+        `Desired Items: [${playerShipHomeland.desired}]`)
 });
 
 gameRunner.next();
