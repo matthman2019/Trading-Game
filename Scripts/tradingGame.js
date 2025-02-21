@@ -152,6 +152,46 @@ function getMerchantSpeak(talkType, merchantName=undefined) {
     }
 }
 
+// cookie functions (since they can be defined in global scope)
+// thanks to w3schools, although I coded these myself
+
+// set a cookie with a name, value, and days until expiration
+function setCookie(cookieName, cookieValue, expirationDays=undefined) {
+    if (expirationDays != undefined) {
+        let expirationDate = new Date();
+        expirationDate.setTime(expirationDate.getTime() + (expirationDays * 1000 * 60 * 60 * 24));
+        let expires = "expires=" + expirationDate.toUTCString();
+        document.cookie = `${cookieName}=${cookieValue};${expires};path=/`;
+    } else {
+        document.cookie = `${cookieName}=${cookieValue}; path=/`;
+    }
+    
+}
+
+// get a cookie's value based on its name. if it isn't found in document.cookie, return ''.
+function getCookie(cookieName) {
+    let cookiesArray = document.cookie.split('; ');
+    
+    for (let i of cookiesArray) {
+        let currentCookieArray = i.split('=');
+        if (cookieName.trim() == currentCookieArray[0].trim()) {
+            return currentCookieArray[1];
+        }
+    }
+    return '';
+}
+
+// check to see if a cookie is found, and return a boolean.
+function checkForCookie(cookieName) {
+    let cookieValue = getCookie(cookieName);
+    if (cookieValue != '') {
+        return true;
+    } else{
+        return false;
+    }
+}
+
+
 
 // Chrome won't let me export or import while testing, unfortunately.
 // This is the end of gameData.js.
@@ -366,6 +406,10 @@ let desiredInputType = undefined;
 let points = 0;
 let playerShipHomeland = undefined;
 
+
+// this little variable checks for cookies, to see if we have played the game before.
+let checkForCookies = false;
+
 function* runGame() {
 
     // first I define a lot of things
@@ -452,6 +496,7 @@ function* runGame() {
 
     // I can't believe it! I subconciously started using python function naming conventions!
     // Haha wow. I actually like camel case more than underscores, but I still try to follow the rules with python.
+    // Edit: I used find & replace to change all of them to camel case.
     function askOpenEnded(question, isNumber = true, max=5, min=0, clearOptionBox=true) {
         setText(question, true, true);
         if (clearOptionBox) {
@@ -478,9 +523,9 @@ function* runGame() {
         desiredInputType = undefined;
     }
 
-    function manageText(text, name='') {
+    function manageText(text, name='', updateFooter=true) {
         // sometimes this fails (because we haven't initialized playerShip yet) so I have try for this
-        try {manageFooter(playerShip);} catch {}
+        if (updateFooter) {try {manageFooter(playerShip);} catch {}}
         
         hideInputs();
         setName(name);
@@ -505,13 +550,28 @@ function* runGame() {
     }
 
     // manage the footer on the bottom of the screen (update gold, inventory, etc)
+    // this also manages cookies.
     function manageFooter(playerShip) {
         footerTable.style.removeProperty("display");
+
+        let gold = playerShip.money.toString();
+        let location = playerShip.city.cityName;
+        let inventory = itemArrayToString(playerShip.inventory);
+        let pointString = points.toString()
         
-        document.getElementById("goldText").innerHTML = "Gold: " + playerShip.money.toString();
-        document.getElementById("locationText").innerHTML = "Location: " + playerShip.city.cityName;
-        document.getElementById("inventoryText").innerHTML = "Inventory: " + itemArrayToString(playerShip.inventory);
-        document.getElementById("pointText").innerHTML = "Points: " + points;
+        // change the footer
+        document.getElementById("goldText").innerHTML = "Gold: " + gold;
+        document.getElementById("locationText").innerHTML = "Location: " + location;
+        document.getElementById("inventoryText").innerHTML = "Inventory: " + inventory;
+        document.getElementById("pointText").innerHTML = "Points: " + pointString;
+
+        // update game save (in cookies)
+        setCookie("playedBefore", "true");
+        setCookie("gold", gold);
+        setCookie("location", location);
+        setCookie("homeland", playerShip.homeland.cityName);
+        setCookie("points", pointString);
+        setCookie("inventory", inventory);
     }
 
     function askTrade(question, options, max, min) {
@@ -543,35 +603,69 @@ function* runGame() {
         return returnArray.join(separator);
     }
 
-    // welcome screen
-    footerTable.style.display = 'none';
-    manageText("Welcome to Indian Ocean Trading!<br>Created by Matthew Winnat<br>Coded by Matthew Zielinski", 'Welcome!');
-    yield;
-
-
-    // get name
-    askOpenEnded("What is your name?<br>Enter your name in the box below:", false);
-    yield;
-    let playerName = getTextInput();
-    
-    // make player ship
-    // get a random city for our hometown. Then make the starting text.
-    // the array places has objects inside of it, but they aren't city objects. That's why I make a city with its cityName.
-    let hometownPlace = new city(places[Math.floor(Math.random() * (places.length - 1))].cityName);
-    playerShipHomeland = hometownPlace;
-    manageText(`Welcome, ${playerName}.<br>
-        Your hometown is the city of ${hometownPlace.cityName}, which is on ${hometownPlace.location}.<br>
-        It is a city well known for its role in Indian Ocean Trade. You have just created a deal with a friend, <br> 
-        ${hometownPlace.merchant}, where he will give you goods to trade for free, asking for half of the profits in return.<br>
-        You accepted his deal, and you are just now preparing to obtain cargo and set sail...`);
-
-    let playerShip = new ship(`${playerName}'s Ship`, [], [], 10, hometownPlace, hometownPlace);
-    for (let i of itemKinds) {
-        playerShip.inventory.push(new item(i));
+    // if we are checking for cookies (variable set up higher), look for the cookie playedBefore.
+    let playedBefore = false;
+    if (checkForCookies) {
+        playedBefore = checkForCookie("playedBefore");
     }
-    yield;
 
-    manageFooter(playerShip);
+    let playerShip = undefined;
+    let hometownPlace = undefined;
+
+    if (!playedBefore) {
+        // welcome screen
+        manageText(`Welcome to Indian Ocean Trading!<br>Created by Matthew Winnat<br>Coded by Matthew Zielinski
+            <br><br><br><br><br><br>
+            This game uses cookies to save your game's progress, so if the school wifi interrupts your connection
+            you don't have to restart the entire game. <br>Game progress cookies store
+            your points, inventory, homeland, in-game currency, and your in-game location, and the cookies expire after four weeks.
+            <br>None of these can personally identify you. None of these are shared with third-parties.
+            <br>This site doesn't collect anything else through cookies.<br>
+            By clicking continue (to continue the game) you agree to this.`, 'Welcome!', false);
+            footerTable.style.display = 'none';
+        yield;
+
+
+        // get name
+        askOpenEnded("What is your name?<br>Enter your name in the box below:", false);
+        yield;
+        let playerName = getTextInput();
+        
+        // make player ship
+        // get a random city for our hometown. Then make the starting text.
+        // the array places has objects inside of it, but they aren't city objects. That's why I make a city with its cityName.
+        hometownPlace = new city(places[Math.floor(Math.random() * (places.length - 1))].cityName);
+        playerShipHomeland = hometownPlace;
+        manageText(`Welcome, ${playerName}.<br>
+            Your hometown is the city of ${hometownPlace.cityName}, which is on ${hometownPlace.location}.<br>
+            It is a city well known for its role in Indian Ocean Trade. You have just created a deal with a friend, <br> 
+            ${hometownPlace.merchant}, where he will give you goods to trade for free, asking for half of the profits in return.<br>
+            You accepted his deal, and you are just now preparing to obtain cargo and set sail...`, '', false);
+
+        playerShip = new ship(`${playerName}'s Ship`, [], [], 10, hometownPlace, hometownPlace);
+        for (let i of itemKinds) {
+            playerShip.inventory.push(new item(i));
+        }
+        yield;
+
+        manageFooter(playerShip);
+
+    } else {
+        // we HAVE played before, so set up everything based on what we find in the cookies.
+        let savedGold = Number(getCookie('gold'));
+        let savedLocation = new city(getCookie('location'));
+        hometownPlace = new city(getCookie('homeland'));
+        points = Number(getCookie('points'));
+        let savedInventory = getCookie('inventory').split(', ');
+
+        playerShipHomeland = hometownPlace;
+
+        playerShip = new ship("We don't save player name's ship", savedInventory, [], savedGold, savedLocation, hometownPlace);
+
+        manageText("Welcome back! Your progress was loaded successfully.", "Welcome!");
+        yield;
+        
+    }
     
     // let the game begin!
     
