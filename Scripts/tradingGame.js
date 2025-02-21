@@ -543,9 +543,6 @@ function* runGame() {
         return returnArray.join(separator);
     }
 
-    askOptions("Test", ["Heyo", "Hi", "YoMamma"], false);
-    yield;
-
     // welcome screen
     footerTable.style.display = 'none';
     manageText("Welcome to Indian Ocean Trading!<br>Created by Matthew Winnat<br>Coded by Matthew Zielinski", 'Welcome!');
