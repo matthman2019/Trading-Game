@@ -407,9 +407,6 @@ function* runGame() {
             newInput.id = optionID.toString();
             newInput.name = 'item';
 
-
-            optionID++;
-
             optionBox.appendChild(newInput);
 
             // now we create a label
@@ -421,11 +418,14 @@ function* runGame() {
             } else {
                 console.log(option.constructor.name)
             }
-
+            newLabel.htmlFor = optionID.toString();
             optionBox.appendChild(newLabel);
 
             // then we add a break
             optionBox.appendChild(document.createElement('br'))
+
+            // also increment optionID so the next button has a unique id
+            optionID++;
         };
     };
 
@@ -542,6 +542,9 @@ function* runGame() {
 
         return returnArray.join(separator);
     }
+
+    askOptions("Test", ["Heyo", "Hi", "YoMamma"], false);
+    yield;
 
     // welcome screen
     footerTable.style.display = 'none';
@@ -798,7 +801,7 @@ function* runGame() {
 
 
                     } else {
-                        manageText(`Ok! You are still in ${playerShip.city.name}.`)
+                        manageText(`Ok! You are still in ${playerShip.city.cityName}.`)
                         yield;
                     }
                     
@@ -964,7 +967,7 @@ function* runGame() {
 
 
                     } else {
-                        manageText(`Ok! You are still in ${playerShip.city.name}.`)
+                        manageText(`Ok! You are still in ${playerShip.city.cityName}.`)
                         yield;
                     }
                     
