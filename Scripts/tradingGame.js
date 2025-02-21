@@ -3,7 +3,6 @@
 // so that's why this is all one silly long script.
 
 const itemKinds = new Array(
-    "Error",
     "Gold",
     "Ivory",
     "Spices",
@@ -47,7 +46,6 @@ const merchants = new Map([
 ]);
 
 const technologyKinds = new Array(
-    "Error",
     "Dhow Ships",
     "Lanteen Sail",
     "Astrolabe",
@@ -353,6 +351,7 @@ class ship {
 
 
 
+
 // I really wish I could just have different scripts, but 20 line breaks work also
 // begin tradingGame.js
 
@@ -544,7 +543,6 @@ function* runGame() {
     }
 
     // welcome screen
-    //setOptions([new item("Gunpowder"), new item("Ivory"), new item("Cotton Textiles")]);
     footerTable.style.display = 'none';
     manageText("Welcome to Indian Ocean Trading!<br>Created by Matthew Winnat<br>Coded by Matthew Zielinski", 'Welcome!');
     itemArrayToString(["Yomamma", new item("Cotton Textiles"), new technology("Junk Ship")]);
@@ -566,8 +564,10 @@ function* runGame() {
         ${hometownPlace.merchant}, where he will give you goods to trade for free, asking for half of the profits in return.<br>
         You accepted his deal, and you are just now preparing to obtain cargo and set sail...`);
 
-    let playerShip = new ship(`${playerName}'s Ship`, [], [], 10, hometownPlace, hometownPlace)
-    playerShip.inventory = [new item("Gunpowder"), new item("Ivory"), new item("Cotton Textiles")];
+    let playerShip = new ship(`${playerName}'s Ship`, [], [], 10, hometownPlace, hometownPlace);
+    for (let i of itemKinds) {
+        playerShip.inventory.push(new item(i));
+    }
     yield;
 
     manageFooter(playerShip);
