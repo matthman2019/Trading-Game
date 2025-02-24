@@ -95,7 +95,8 @@ const dialog = new Map([
     ['offer', ['How about this:', 'How does this sound:', "How about: ", 'Does this sound good:']],
     ['unload', ['Certainly. What exotics did you get?', "Wow, that's a lot of items! What did you want to unload again?", 'Great, what do you have for me?']],
     ['unload fail', ['Hard to unload an already empty ship, bud.', "I can't unload what's already empty!", "There's nothing to unload!"]],
-    ['load', ['Yep, get these goods and get selling!', 'Yeah sure, what do you want?', 'Alright, what would you like?']]
+    ['load', ['Yep, get these goods and get selling!', 'Yeah sure, what do you want?', 'Alright, what would you like?']],
+    ['too many items', ['That many items would sink your ship!', 'No can do, your ship would sink!', 'Do you want to sink your ship?', "You can't put that much cargo on a ship like that!"]]
 ]);
 
 
@@ -332,9 +333,15 @@ class ship {
 
             // make sure that we actually got an item! if not, return false
             if (!itemReturned) {
+                console.error("Some items were not found in inventory;");
                 return false;
             };
         };
+
+        indexesToDelete.sort();
+        indexesToDelete.reverse();
+        console.log(indexesToDelete.length == items.length);
+        console.log(indexesToDelete);
 
         // we must have found the indexes for ALL the items without error! Woo! Now let's delete them
         for (let index of indexesToDelete) {
@@ -345,6 +352,17 @@ class ship {
         // we did it! we took items out of our inventory and returned them!
         return returnArray;
     };
+    
+    // add items to the inventory (with respect to inventoryLimit)
+    addItems(items) {
+        this.inventory = this.inventory.concat(items);
+        if (this.inventory.length > this.inventoryLimit) {
+            console.warn("More than inventoryLimit items were put in a ship inventory, it has been trimmed to be inventoryLimit");
+            while (this.inventory.length > this.inventoryLimit) {
+                this.inventory.pop();
+            }
+        }
+    }
 
     // this function takes some random object and classifies it into its proper place
     // they don't have anything like switch in python, but they do in C++. Interesting
@@ -720,9 +738,10 @@ function* runGame() {
                     }
 
                     // ask what we would like to buy first
-                    askTrade("Alright! Let's trade. Choose the items you would like to buy:<br>"+
-                        "In the box below, put how much currency you would like to add to the trade.<br>"+
-                        "To cancel this trade, click continue without selecting any items or adding currency.",
+                    askTrade(`Alright! Let's trade. Choose the items you would like to buy:<br>
+                        In the box below, put how much currency you would like to add to the trade.<br>
+                        To cancel this trade, click continue without selecting any items or adding currency.
+                        Remember that your inventory can hold ${playerShip.inventoryLimit.toString()} items.`,
                         amplifiedStock, 1000, 0)
                     
                     yield;
@@ -736,15 +755,30 @@ function* runGame() {
                         continue;
                     }
                     
-                    askTrade("Ok! Choose the items (and currency) that you would like to give:<br>"+
-                        `(You asked for [${playerDesiredItems.join(", ")}] and ${playerDesiredCurrency.toString()} gold.)`,
+                    askTrade(`Ok! Choose the items (and currency) that you would like to give:<br>
+                        You asked for [${playerDesiredItems.join(", ")}] and ${playerDesiredCurrency.toString()} gold.`,
                         playerShip.inventory, playerShip.money, 0
                     )
+                    if (playerShip.inventory.length + playerDesiredItems.length > playerShip.inventoryLimit) {
+                        setText(`Remember that you can't take more than ${playerShip.inventoryLimit.toString()} items.<br>
+                        To keep your inventory under the limit, you need to trade at least 
+                        ${(playerShip.inventoryLimit - playerDesiredItems.length + playerShip.inventory.length).toString()} items.
+                        `);
+                    }
                     yield;
                     
                     // get options and return merchant feedback
                     let playerPaymentItems = getOptions(playerShip.inventory);
                     let playerPaymentCurrency = Number(getTextInput());
+
+                     // check that our inventory will stay under the limit
+                     if (playerShip.inventory.length + playerDesiredItems.length - playerPaymentItems.length > playerShip.inventoryLimit) {
+                        manageText(getMerchantSpeak('too many items', playerShip.city.merchant), playerShip.city.merchant);
+                        setText(`<br>Oops! That would have sunk your ship. Try asking for fewer items next time!<br>
+                            The trade was not completed.`);
+                        yield;
+                        continue;
+                     }
 
                     // desired worth is the length of things we want to buy plus currency.
                     // also plus merchantTemper (making us have to trade more sometimes)
@@ -805,7 +839,7 @@ function* runGame() {
                             }
 
                             playerShip.returnItems(paymentItemArray);
-                            playerShip.inventory = playerShip.inventory.concat(desireItemArray);
+                            playerShip.addItems(desireItemArray);
                             manageFooter(playerShip);
                             manageText("Great! The trade was completed successfully.","Success!");
                             yield;
@@ -891,10 +925,11 @@ function* runGame() {
                     let finalizeLeave = getOptions(yesNoArray)[0];
                     if (finalizeLeave == "Yes") {  
                         trading = false;
-                        askOptions("Time to set sail!<br>Where would you like to go next?",
+                        askOptions(getMerchantSpeak('goodbye', playerShip.city.merchant),
                             playerShip.city.destinations,
                             true
                         );
+                        setText("<br>Time to set sail!<br>Where would you like to go next?")
                         yield;
 
                         let playerDestinationString = getOptions(playerShip.city.destinations)[0];
@@ -975,6 +1010,13 @@ function* runGame() {
                 let playerActionChoice = getOptions(["Load Cargo", "Unload Cargo", "Exchange Currency", "Leave"])[0];
 
                 if (playerActionChoice == "Load Cargo") {
+
+                    if (playerShip.inventory.length >= playerShip.inventoryLimit) {
+                        manageText(getMerchantSpeak('too full', playerShip.city.merchant), playerShip.city.merchant);
+                        setText("<br> Your ship's inventory is completely full! You need to unload some items first.");
+                        yield;
+                        continue;
+                    }
                     // make a new list with 3 of every thing in stock (so players can get more than one if they so choose)
                     let amplifiedStock = [];
                     for (let thing of playerShip.city.stock) {
@@ -984,8 +1026,11 @@ function* runGame() {
                     }
 
                     // ask what we would like to get
-                    askOptions("Alright! Let's load some cargo. Choose the items you would like to recieve.<br>" +
-                        "To cancel this, click continue without selecting any items or adding currency.",
+                    askOptions(`Alright! Let's load some cargo. Choose the items you would like to recieve.<br>
+                        You can select a maximum of ${(playerShip.inventoryLimit - playerShip.inventory.length).toString()}
+                        items to put on your ship (due to your ship's max cargo capacity of 
+                        ${playerShip.inventoryLimit.toString()} items).<br>
+                        To cancel this, click continue without selecting any items or adding currency.`,
                         amplifiedStock, false);
                     desiredInputType = "cargoLoad";
                     
@@ -996,6 +1041,15 @@ function* runGame() {
 
                     // also break the loop if we asked for nothing
                     if (playerDesiredItems.length == 0) {
+                        continue;
+                    } else if (playerDesiredItems.length > playerShip.inventoryLimit) {
+                        manageText(getMerchantSpeak('too many items', playerShip.city.merchant));
+                        setText(`<br>Looks like you requested too many items!<br>
+                            Your ship can take a maximum of ${playerShip.inventoryLimit.toString()} items.`,
+                            true,
+                            false
+                        );
+                        yield;
                         continue;
                     }
                     
@@ -1015,7 +1069,7 @@ function* runGame() {
                             desireItemArray.push(new item(str));
                         }
 
-                        playerShip.inventory = playerShip.inventory.concat(desireItemArray);
+                        playerShip.addItems(desireItemArray);
                         points -= desireItemArray.length;
                         manageText("Great! You loaded on your cargo.","Success!");
                         yield;
@@ -1102,10 +1156,11 @@ function* runGame() {
                     let finalizeLeave = getOptions(yesNoArray)[0];
                     if (finalizeLeave == "Yes") {  
                         trading = false;
-                        askOptions("Time to set sail!<br>Where would you like to go next?",
+                        askOptions(getMerchantSpeak('goodbye', playerShip.city.merchant),
                             playerShip.city.destinations,
                             true
                         );
+                        setText("<br>Time to set sail!<br>Where would you like to go next?")
                         yield;
 
                         let playerDestinationString = getOptions(playerShip.city.destinations)[0];
