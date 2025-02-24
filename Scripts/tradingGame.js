@@ -732,9 +732,10 @@ function* runGame() {
                     }
 
                     // ask what we would like to buy first
-                    askTrade("Alright! Let's trade. Choose the items you would like to buy:<br>"+
-                        "In the box below, put how much currency you would like to add to the trade.<br>"+
-                        "To cancel this trade, click continue without selecting any items or adding currency.",
+                    askTrade(`Alright! Let's trade. Choose the items you would like to buy:<br>
+                        In the box below, put how much currency you would like to add to the trade.<br>
+                        To cancel this trade, click continue without selecting any items or adding currency.
+                        Remember that your inventory can hold ${playerShip.inventoryLimit.toString()} items.`,
                         amplifiedStock, 1000, 0)
                     
                     yield;
@@ -748,15 +749,29 @@ function* runGame() {
                         continue;
                     }
                     
-                    askTrade("Ok! Choose the items (and currency) that you would like to give:<br>"+
-                        `(You asked for [${playerDesiredItems.join(", ")}] and ${playerDesiredCurrency.toString()} gold.)`,
+                    askTrade(`Ok! Choose the items (and currency) that you would like to give:<br>
+                        You asked for [${playerDesiredItems.join(", ")}] and ${playerDesiredCurrency.toString()} gold.`,
                         playerShip.inventory, playerShip.money, 0
                     )
+                    if (playerShip.inventory.length + playerDesiredItems.length > playerShip.inventoryLimit) {
+                        setText(`Remember that you can't take more than ${playerShip.inventoryLimit.toString()} items.<br>
+                        To keep your inventory under the limit, you need to trade at least 
+                        ${(playerShip.inventoryLimit - playerDesiredItems.length + playerShip.inventory.length).toString()} items.
+                        `);
+                    }
                     yield;
                     
                     // get options and return merchant feedback
                     let playerPaymentItems = getOptions(playerShip.inventory);
                     let playerPaymentCurrency = Number(getTextInput());
+
+                     // check that our inventory will stay under the limit
+                     if (playerShip.inventory.length + playerDesiredItems.length - playerPaymentItems.length > playerShip.inventoryLimit) {
+                        console.log("Too many items!");
+                        manageText("ADD THIS!", "NOT IMPLEMENTED");
+                        yield;
+                        continue;
+                     }
 
                     // desired worth is the length of things we want to buy plus currency.
                     // also plus merchantTemper (making us have to trade more sometimes)
