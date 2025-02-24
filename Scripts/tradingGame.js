@@ -441,7 +441,7 @@ yield;
 
 
 // this little variable checks for cookies, to see if we have played the game before.
-let checkForCookies = false;
+let checkForCookies = true;
 
 function* runGame() {
 
@@ -773,8 +773,9 @@ function* runGame() {
 
                      // check that our inventory will stay under the limit
                      if (playerShip.inventory.length + playerDesiredItems.length - playerPaymentItems.length > playerShip.inventoryLimit) {
-                        console.log("Too many items!");
-                        manageText("ADD THIS!", "NOT IMPLEMENTED");
+                        manageText(getMerchantSpeak('too many items', playerShip.city.merchant), playerShip.city.merchant);
+                        setText(`<br>Oops! That would have sunk your ship. Try asking for fewer items next time!<br>
+                            The trade was not completed.`);
                         yield;
                         continue;
                      }
@@ -924,10 +925,11 @@ function* runGame() {
                     let finalizeLeave = getOptions(yesNoArray)[0];
                     if (finalizeLeave == "Yes") {  
                         trading = false;
-                        askOptions("Time to set sail!<br>Where would you like to go next?",
+                        askOptions(getMerchantSpeak('goodbye', playerShip.city.merchant),
                             playerShip.city.destinations,
                             true
                         );
+                        setText("<br>Time to set sail!<br>Where would you like to go next?")
                         yield;
 
                         let playerDestinationString = getOptions(playerShip.city.destinations)[0];
@@ -1008,6 +1010,13 @@ function* runGame() {
                 let playerActionChoice = getOptions(["Load Cargo", "Unload Cargo", "Exchange Currency", "Leave"])[0];
 
                 if (playerActionChoice == "Load Cargo") {
+
+                    if (playerShip.inventory.length >= playerShip.inventoryLimit) {
+                        manageText(getMerchantSpeak('too full', playerShip.city.merchant), playerShip.city.merchant);
+                        setText("<br> Your ship's inventory is completely full! You need to unload some items first.");
+                        yield;
+                        continue;
+                    }
                     // make a new list with 3 of every thing in stock (so players can get more than one if they so choose)
                     let amplifiedStock = [];
                     for (let thing of playerShip.city.stock) {
@@ -1147,10 +1156,11 @@ function* runGame() {
                     let finalizeLeave = getOptions(yesNoArray)[0];
                     if (finalizeLeave == "Yes") {  
                         trading = false;
-                        askOptions("Time to set sail!<br>Where would you like to go next?",
+                        askOptions(getMerchantSpeak('goodbye', playerShip.city.merchant),
                             playerShip.city.destinations,
                             true
                         );
+                        setText("<br>Time to set sail!<br>Where would you like to go next?")
                         yield;
 
                         let playerDestinationString = getOptions(playerShip.city.destinations)[0];
