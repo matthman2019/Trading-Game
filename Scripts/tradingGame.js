@@ -333,9 +333,15 @@ class ship {
 
             // make sure that we actually got an item! if not, return false
             if (!itemReturned) {
+                console.error("Some items were not found in inventory;");
                 return false;
             };
         };
+
+        indexesToDelete.sort();
+        indexesToDelete.reverse();
+        console.log(indexesToDelete.length == items.length);
+        console.log(indexesToDelete);
 
         // we must have found the indexes for ALL the items without error! Woo! Now let's delete them
         for (let index of indexesToDelete) {
