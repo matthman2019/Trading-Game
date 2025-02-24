@@ -95,7 +95,8 @@ const dialog = new Map([
     ['offer', ['How about this:', 'How does this sound:', "How about: ", 'Does this sound good:']],
     ['unload', ['Certainly. What exotics did you get?', "Wow, that's a lot of items! What did you want to unload again?", 'Great, what do you have for me?']],
     ['unload fail', ['Hard to unload an already empty ship, bud.', "I can't unload what's already empty!", "There's nothing to unload!"]],
-    ['load', ['Yep, get these goods and get selling!', 'Yeah sure, what do you want?', 'Alright, what would you like?']]
+    ['load', ['Yep, get these goods and get selling!', 'Yeah sure, what do you want?', 'Alright, what would you like?']],
+    ['too many items', ['That many items would sink your ship!', 'No can do, your ship would sink!', 'Do you want to sink your ship?', "You can't put that much cargo on a ship like that!"]]
 ]);
 
 
@@ -345,6 +346,17 @@ class ship {
         // we did it! we took items out of our inventory and returned them!
         return returnArray;
     };
+    
+    // add items to the inventory (with respect to inventoryLimit)
+    addItems(items) {
+        this.inventory = this.inventory.concat(items);
+        if (this.inventory.length > this.inventoryLimit) {
+            console.warn("More than inventoryLimit items were put in a ship inventory, it has been trimmed to be inventoryLimit");
+            while (this.inventory.length > this.inventoryLimit) {
+                this.inventory.pop();
+            }
+        }
+    }
 
     // this function takes some random object and classifies it into its proper place
     // they don't have anything like switch in python, but they do in C++. Interesting
@@ -423,7 +435,7 @@ yield;
 
 
 // this little variable checks for cookies, to see if we have played the game before.
-let checkForCookies = true;
+let checkForCookies = false;
 
 function* runGame() {
 
@@ -805,7 +817,7 @@ function* runGame() {
                             }
 
                             playerShip.returnItems(paymentItemArray);
-                            playerShip.inventory = playerShip.inventory.concat(desireItemArray);
+                            playerShip.addItems(desireItemArray);
                             manageFooter(playerShip);
                             manageText("Great! The trade was completed successfully.","Success!");
                             yield;
@@ -984,8 +996,11 @@ function* runGame() {
                     }
 
                     // ask what we would like to get
-                    askOptions("Alright! Let's load some cargo. Choose the items you would like to recieve.<br>" +
-                        "To cancel this, click continue without selecting any items or adding currency.",
+                    askOptions(`Alright! Let's load some cargo. Choose the items you would like to recieve.<br>
+                        You can select a maximum of ${(playerShip.inventoryLimit - playerShip.inventory.length).toString()}
+                        items to put on your ship (due to your ship's max cargo capacity of 
+                        ${playerShip.inventoryLimit.toString()} items).<br>
+                        To cancel this, click continue without selecting any items or adding currency.`,
                         amplifiedStock, false);
                     desiredInputType = "cargoLoad";
                     
@@ -996,6 +1011,15 @@ function* runGame() {
 
                     // also break the loop if we asked for nothing
                     if (playerDesiredItems.length == 0) {
+                        continue;
+                    } else if (playerDesiredItems.length > playerShip.inventoryLimit) {
+                        manageText(getMerchantSpeak('too many items', playerShip.city.merchant));
+                        setText(`<br>Looks like you requested too many items!<br>
+                            Your ship can take a maximum of ${playerShip.inventoryLimit.toString()} items.`,
+                            true,
+                            false
+                        );
+                        yield;
                         continue;
                     }
                     
@@ -1015,7 +1039,7 @@ function* runGame() {
                             desireItemArray.push(new item(str));
                         }
 
-                        playerShip.inventory = playerShip.inventory.concat(desireItemArray);
+                        playerShip.addItems(desireItemArray);
                         points -= desireItemArray.length;
                         manageText("Great! You loaded on your cargo.","Success!");
                         yield;
