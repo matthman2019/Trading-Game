@@ -46,27 +46,33 @@ const merchants = new Map([
 ]);
 
 const technologyKinds = new Array(
-    "Dhow Ships",
-    "Lanteen Sail",
+    "Dhow Ship",
+    "Lateen Sail",
     "Astrolabe",
     "Magnetic Compass",
     "Stern Rudder",
     "Junk Ship",
 );
+// the actions that technologies do are defined below in the ship class, in addTechnologiesAndClassify.
+// I could have used callbacks but I didn't.
+
+// dhow ship increases cargo capacity to 20.
+// junk ship increases cargo capacity to 40.
+// 
 
 // This took a couple attempts to generate right
 
 const places = new Array(
     {cityName : 'Zanzibar', location : 'Swahili Coast',stock : ['Gold', 'Ivory', 'Spices', 'Animal Skins', 'Timber'],desired : ['Porcelain', 'Silk', 'Rice', 'Tea', 'Spices', 'Cotton Textiles', 'Gems', 'Incense', 'Steel Swords'],tech : [],destinations : ['Venice', 'Persia', 'Egypt', 'Calicut', 'Kilwa', 'Gujarat']},
-    {cityName : 'Venice', location : 'Mediterranean',stock : ['Silver', 'Wine', 'Wool Textiles', 'Salt'],desired : ['Gold', 'Silk', 'Silver', 'Pepper', 'Porcelain', 'Timber', 'Spices', 'Pearls'],tech : ['Dhow Ships', 'Lanteen Sail'],destinations : ['Egypt', 'Persia']},
+    {cityName : 'Venice', location : 'Mediterranean',stock : ['Silver', 'Wine', 'Wool Textiles', 'Salt'],desired : ['Gold', 'Silk', 'Silver', 'Pepper', 'Porcelain', 'Timber', 'Spices', 'Pearls'],tech : ['Dhow Ship', 'Lateen Sail'],destinations : ['Egypt', 'Persia']},
     {cityName : 'Hambantota', location : 'Sri Lanka',stock : ['Spices', 'Ivory', 'Gems', 'Pearls', 'Cotton Textiles'],desired : ['Horses', 'Porcelain', 'Gold', 'Silk', 'Silver'],tech : [],destinations : ['Persia', 'Calicut', 'Gujarat', 'Malacca']},
-    {cityName : 'Egypt', location : 'The Red Sea',stock : ['Gold', 'Horses', 'Incense', 'Pearls', 'Silver'],desired : ['Cotton Textiles', 'Ivory', 'Spices', 'Pepper', 'Porcelain', 'Gems'],tech : ['Lanteen Sail'],destinations : ['Kilwa', 'Persia', 'Calicut', 'Gujarat']},
-    {cityName : 'Persia', location : 'Persian Gulf',stock : ['Carpets', 'Horses', 'Incense', 'Pearls', 'Silver', 'Dyes', 'Steel Swords'],desired : ['Cotton Textiles', 'Ivory', 'Percelain', 'Spices', 'Pepper'],tech : ['Lanteen Sail', 'Astrolabe'],destinations : ['Kilwa', 'Egypt', 'Calicut', 'Gujarat']},
+    {cityName : 'Egypt', location : 'The Red Sea',stock : ['Gold', 'Horses', 'Incense', 'Pearls', 'Silver'],desired : ['Cotton Textiles', 'Ivory', 'Spices', 'Pepper', 'Porcelain', 'Gems'],tech : ['Lateen Sail'],destinations : ['Kilwa', 'Persia', 'Calicut', 'Gujarat']},
+    {cityName : 'Persia', location : 'Persian Gulf',stock : ['Carpets', 'Horses', 'Incense', 'Pearls', 'Silver', 'Dyes', 'Steel Swords'],desired : ['Cotton Textiles', 'Ivory', 'Percelain', 'Spices', 'Pepper'],tech : ['Lateen Sail', 'Astrolabe'],destinations : ['Kilwa', 'Egypt', 'Calicut', 'Gujarat']},
     {cityName : 'Malacca', location : 'Malaccan Strait',stock : ['Gems', 'Pepper', 'Pearls', 'Spices', 'Timber'],desired : ['Cotton Textiles', 'Ivory', 'Incense', 'Silk', 'Porcelain', 'Sugar Cultivation Knowledge'],tech : [],destinations : ['Calicut', 'Gujarat', 'Hambantota', 'Hangzhou']},
     {cityName : 'Kilwa', location : 'Swahili Coast',stock : ['Gold', 'Ivory'],desired : ['Cotton Textiles', 'Pearls', 'Porcelain', 'Gems', 'Pepper', 'Spices'],tech : [],destinations : ['Egypt', 'Calicut', 'Gujarat', 'Malacca']},
     {cityName : 'Hangzhou', location : 'China',stock : ['Silk', 'Porcelain', 'Metals', 'Gunpowder', 'Tea', 'Rice'],desired : ['Spices', 'Ivory', 'Pepper', 'Salt', 'Gold'],tech : ['Magnetic Compass', 'Stern Rudder', 'Junk Ship'],destinations : ['Malacca']},
-    {cityName : 'Gujarat', location : 'India',stock : ['Cotton Textiles', 'Pepper', 'Steel Swords', 'Gold', 'Gems', 'Dye', 'Silk', 'Spices'],desired : ['Incense', 'Porcelain', 'Sugar Cultivation Knowledge', 'Timber', 'Ivory'],tech : ['Lanteen Sail'],destinations : ['Hambantota', 'Zanzibar', 'Venice', 'Egypt', 'Persia', 'Malacca', 'Kilwa', 'Calicut']},
-    {cityName : 'Calicut', location : 'India',stock : ['Cotton Textiles', 'Pepper', 'Gold', 'Gems', 'Steel Swords', 'Dye', 'Silk', 'Spices'],desired : ['Incense', 'Ivory', 'Porcelain', 'Sugar Cultivation Knowledge', 'Timber'],tech : ['Lanteen Sail'],destinations : ['Hambantota', 'Zanzibar', 'Venice', 'Egypt', 'Persia', 'Malacca', 'Kilwa', 'Gujarat']}
+    {cityName : 'Gujarat', location : 'India',stock : ['Cotton Textiles', 'Pepper', 'Steel Swords', 'Gold', 'Gems', 'Dye', 'Silk', 'Spices'],desired : ['Incense', 'Porcelain', 'Sugar Cultivation Knowledge', 'Timber', 'Ivory'],tech : ['Lateen Sail'],destinations : ['Hambantota', 'Zanzibar', 'Venice', 'Egypt', 'Persia', 'Malacca', 'Kilwa', 'Calicut']},
+    {cityName : 'Calicut', location : 'India',stock : ['Cotton Textiles', 'Pepper', 'Gold', 'Gems', 'Steel Swords', 'Dye', 'Silk', 'Spices'],desired : ['Incense', 'Ivory', 'Porcelain', 'Sugar Cultivation Knowledge', 'Timber'],tech : ['Lateen Sail'],destinations : ['Hambantota', 'Zanzibar', 'Venice', 'Egypt', 'Persia', 'Malacca', 'Kilwa', 'Gujarat']}
 );
 
 // I am far too lazy to actually write a merchant property for each of these places
@@ -292,7 +298,7 @@ class city {
         this.stock = currentCityObject.stock;
         this.desired = currentCityObject.desired;
         this.destinations = currentCityObject.destinations;
-        this.tech = currentCityObject.tech;
+        this.techs = currentCityObject.tech;
         this.merchant = currentCityObject.merchant;
     };
 };
@@ -306,7 +312,7 @@ class ship {
         this.city = city;
         this.homeland = homeland;
 
-        this.inventoryLimit = 10;
+        this.inventoryLimit = 20;
     };
 
     // this method looks through items in the inventory, returns them in an array if successful, and returns false if
@@ -360,6 +366,29 @@ class ship {
             console.warn("More than inventoryLimit items were put in a ship inventory, it has been trimmed to be inventoryLimit");
             while (this.inventory.length > this.inventoryLimit) {
                 this.inventory.pop();
+            }
+        }
+    }
+
+    // add technologies to the ship and activate their effects
+    addTechnologiesAndClassify(techs) {
+        for (let tech of techs) {
+            // activate only if we DON'T have the tech yet
+            let hasTech = false;
+            for (let ownedTech of this.technology) {
+                if (ownedTech.kind == tech.kind) {
+                    hasTech = true;
+                    break;
+                }
+            }
+             
+            if (!hasTech) {
+                this.technology = this.technology.push(tech);
+                if (tech.kind == "Junk Ship") {
+                    if (this.inventoryLimit < 40) {this.inventoryLimit = 40;}
+                } else if (tech.kind == "Dhow Ship") {
+                    if (this.inventoryLimit < 20) {this.inventoryLimit = 20;}
+                }
             }
         }
     }
@@ -441,7 +470,7 @@ yield;
 
 
 // this little variable checks for cookies, to see if we have played the game before.
-let checkForCookies = true;
+let checkForCookies = false;
 
 function* runGame() {
 
@@ -592,7 +621,8 @@ function* runGame() {
         let gold = playerShip.money.toString();
         let location = playerShip.city.cityName;
         let inventory = itemArrayToString(playerShip.inventory);
-        let pointString = points.toString()
+        let pointString = points.toString();
+        let technologies = itemArrayToString(playerShip.techs);
         
         // change the footer
         document.getElementById("goldText").innerHTML = "Gold: " + gold;
@@ -607,6 +637,7 @@ function* runGame() {
         setCookie("homeland", playerShip.homeland.cityName);
         setCookie("points", pointString);
         setCookie("inventory", inventory);
+        setCookie("technologies", technologies);
     }
 
     function askTrade(question, options, max, min) {
@@ -683,10 +714,13 @@ function* runGame() {
         hometownPlace = new city(getCookie('homeland'));
         points = Number(getCookie('points'));
         let savedInventory = getCookie('inventory').split(', ');
+        let savedTechnologies = getCookie('technologies').split(', ')
 
         playerShipHomeland = hometownPlace;
 
-        playerShip = new ship("Player's ship", savedInventory, [], savedGold, savedLocation, hometownPlace);
+        playerShip = new ship("Player's ship", [], [], savedGold, savedLocation, hometownPlace);
+        playerShip.addItems(savedInventory);
+        playerShip.addTechnologiesAndClassify(savedTechnologies);
 
         manageText("Welcome back! Your progress was loaded successfully.", "Welcome!");
         yield;
@@ -736,6 +770,9 @@ function* runGame() {
                             amplifiedStock.push(thing);
                         }
                     }
+                    for (let tech of playerShip.city.techs) {
+                        amplifiedStock.push(tech);
+                    }
 
                     // ask what we would like to buy first
                     askTrade(`Alright! Let's trade. Choose the items you would like to buy:<br>
@@ -747,11 +784,24 @@ function* runGame() {
                     yield;
                     
                     // get the response and ask what we would like to trade back
-                    let playerDesiredItems = getOptions(amplifiedStock);
+                    let playerDesiredThings = getOptions(amplifiedStock);
+                    let playerDesiredTechs = [];
+                    let playerDesiredItems = [];
+                    // separate playerDesiredThings into technologies and items
+                    for (let thing of playerDesiredThings) {
+                        if (itemKinds.includes(thing)) {
+                            playerDesiredItems.push(thing);
+                        } else if (technologyKinds.includes(thing)) {
+                            playerDesiredTechs.push(thing);
+                        } else {
+                            console.error("Some item the player requested was not in itemKinds or technologyKinds.");
+                        }
+                    }
+
                     let playerDesiredCurrency = Number(getTextInput());
 
                     // also break the loop if we asked for nothing
-                    if (playerDesiredItems.length == 0 && playerDesiredCurrency == 0) {
+                    if (playerDesiredThings.length == 0 && playerDesiredCurrency == 0) {
                         continue;
                     }
                     
@@ -784,6 +834,10 @@ function* runGame() {
                     // also plus merchantTemper (making us have to trade more sometimes)
                     let desiredWorth = 0;
                     desiredWorth += playerDesiredCurrency + playerDesiredItems.length + merchantTemper;
+                    // technologies go for more. They might differ in value so I have this
+                    for (let tech of playerDesiredTechs) {
+                        desiredWorth += 5;
+                    }
 
                     // payment worth is trickier. If we're paying things in playerShip.city.stock, add 0.5. If we're paying things in desired, add 3. Else, add 1.
                     // this makes different items worth more or less.
@@ -805,9 +859,7 @@ function* runGame() {
                     else if (worthDifference >= -2) {merchantReaction = 'meh deal'}
                     else {merchantReaction = 'bad deal'}
 
-                    console.log()
-                    console.log(paymentWorth);
-                    console.log(desiredWorth);
+                    if (worthDifference < 0) {console.log(worthDifference.toString());}
                     
 
                     manageText(getMerchantSpeak(merchantReaction, playerShip.city.merchant));
@@ -833,6 +885,10 @@ function* runGame() {
                             for (let str of playerDesiredItems) {
                                 desireItemArray.push(new item(str));
                             }
+                            let desireTechArray = [];
+                            for (let str of playerDesiredTechs) {
+                                desireTechArray.push(new technology(str));
+                            }
                             let paymentItemArray = [];
                             for (let item of playerPaymentItems) {
                                 paymentItemArray.push(item);
@@ -840,6 +896,7 @@ function* runGame() {
 
                             playerShip.returnItems(paymentItemArray);
                             playerShip.addItems(desireItemArray);
+                            playerShip.addTechnologiesAndClassify(desireTechArray);
                             manageFooter(playerShip);
                             manageText("Great! The trade was completed successfully.","Success!");
                             yield;
