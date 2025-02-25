@@ -375,7 +375,7 @@ class ship {
         for (let tech of techs) {
             // activate only if we DON'T have the tech yet
             let hasTech = false;
-            for (let ownedTech of this.technology) {
+            for (let ownedTech of this.techs) {
                 if (ownedTech.kind == tech.kind) {
                     hasTech = true;
                     break;
@@ -383,7 +383,7 @@ class ship {
             }
              
             if (!hasTech) {
-                this.technology = this.technology.push(tech);
+                this.techs = this.techs.push(tech);
                 if (tech.kind == "Junk Ship") {
                     if (this.inventoryLimit < 40) {this.inventoryLimit = 40;}
                 } else if (tech.kind == "Dhow Ship") {
@@ -470,7 +470,7 @@ yield;
 
 
 // this little variable checks for cookies, to see if we have played the game before.
-let checkForCookies = false;
+let checkForCookies = true;
 
 function* runGame() {
 
