@@ -1290,29 +1290,35 @@ function buttonClick() {
         } else {
             sectionText.innerHTML = "&darr;&darr;&darr; Please actually type something! &darr;&darr;&darr;";
         }
-    
+            
     // if we're looking for a choice, make sure that we actually selected something
+    // unless theres no checkboxes big boy
+    // or choice box whatever radio buttons
     } else if (desiredInputType == 'choice') {
         let isOneSelected = false;
         let hasCheckboxes = false;
-        
-        for (let option of document.getElementById("optionBox").childNodes) {
-            if (option.type === "checkbox") {
-                hasCheckboxes = true; // Found at least one checkbox
-                if (option.checked) {
-                    isOneSelected = true;
-                    break;
+    
+        const optionBox = document.getElementById("optionBox");
+        if (optionBox) {
+            for (let option of optionBox.children) {
+                if (option.type === "checkbox") {
+                    hasCheckboxes = true; // found one i think
+                    if (option.checked) {
+                        isOneSelected = true;
+                        break;
+                    }
                 }
             }
         }
-
+    
         if (isOneSelected) {
-                        gameRunner.next();
+            gameRunner.next();
         } else if (!hasCheckboxes) {
-            sectionText.innerHTML = "&rarr;&rarr; No checkboxes available! &rarr;&rarr;";
+            sectionText.innerHTML = "&rarr;&rarr; there arent any checkboxes stupid idiot 😡😡 &rarr;&rarr;";
         } else {
             sectionText.innerHTML = "&rarr;&rarr; Please select at least one! &rarr;&rarr;";
         }
+    }
 
     // why does this exist? IDK, but if I make trades more complex in the future it could be helpful. 
     // Right now it is the same as desiredInputType='number'
