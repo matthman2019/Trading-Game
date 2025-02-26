@@ -298,21 +298,21 @@ class city {
         this.stock = currentCityObject.stock;
         this.desired = currentCityObject.desired;
         this.destinations = currentCityObject.destinations;
-        this.techs = currentCityObject.tech;
+        this.technologies = currentCityObject.tech;
         this.merchant = currentCityObject.merchant;
     };
 };
 
 class ship {
-    constructor(shipName, inventory = [], techs = [], money = 0, city = new city("Venice"), homeland = new city("Venice")) {
+    constructor(shipName, inventory = [], technologies = [], money = 0, city = new city("Venice"), homeland = new city("Venice")) {
         this.shipName = shipName;
         this.inventory = inventory;
-        this.techs = techs;
+        this.technologies = technologies;
         this.money = money;
         this.city = city;
         this.homeland = homeland;
 
-        this.inventoryLimit = 20;
+        this.inventoryLimit = 15;
     };
 
     // this method looks through items in the inventory, returns them in an array if successful, and returns false if
@@ -346,8 +346,6 @@ class ship {
 
         indexesToDelete.sort();
         indexesToDelete.reverse();
-        console.log(indexesToDelete.length == items.length);
-        console.log(indexesToDelete);
 
         // we must have found the indexes for ALL the items without error! Woo! Now let's delete them
         for (let index of indexesToDelete) {
@@ -361,7 +359,9 @@ class ship {
     
     // add items to the inventory (with respect to inventoryLimit)
     addItems(items) {
-        this.inventory = this.inventory.concat(items);
+        for (let item of items) {
+            this.classifyThing(item);
+        }
         if (this.inventory.length > this.inventoryLimit) {
             console.warn("More than inventoryLimit items were put in a ship inventory, it has been trimmed to be inventoryLimit");
             while (this.inventory.length > this.inventoryLimit) {
@@ -371,25 +371,31 @@ class ship {
     }
 
     // add technologies to the ship and activate their effects
-    addTechnologiesAndClassify(techs) {
-        for (let tech of techs) {
+    addTechnologiesAndClassify(technologies) {
+        for (let tech of technologies) {
+            // make sure tech is a technology
+            if (tech.constructor.name == "String") {
+                tech = new technology(tech);
+            }
+
             // activate only if we DON'T have the tech yet
             let hasTech = false;
-            for (let ownedTech of this.techs) {
+            for (let ownedTech of this.technologies) {
                 if (ownedTech.kind == tech.kind) {
                     hasTech = true;
                     break;
                 }
             }
+
              
             if (!hasTech) {
-                this.techs = this.techs.push(tech);
                 if (tech.kind == "Junk Ship") {
                     if (this.inventoryLimit < 40) {this.inventoryLimit = 40;}
                 } else if (tech.kind == "Dhow Ship") {
-                    if (this.inventoryLimit < 20) {this.inventoryLimit = 20;}
+                    if (this.inventoryLimit < 30) {this.inventoryLimit = 30;}
                 }
             }
+
         }
     }
 
@@ -401,13 +407,16 @@ class ship {
                 this.inventory.push(thing);
                 break;
             case 'technology':
-                this.techs.push(thing);
+                this.technologies.push(thing);
                 break;
             case 'number':
                 this.money += thing;
                 break;
+            case 'String':
+                if (itemKinds.includes(thing)) {this.inventory.push(new item(thing));}
+                else if (technologyKinds.includes(thing)) {this.technologies.push(new technology(thing));}
             default:
-                console.log(typeof (thing));
+                console.log(thing.constructor.name);
         };
     };
 };
@@ -518,7 +527,7 @@ function* runGame() {
 
             // now we create a label
             let newLabel = document.createElement("label")
-            if ((typeof (option) == 'string')) {
+            if ((typeof(option) == 'string')) {
                 newLabel.innerHTML = option;
             } else if (option.constructor.name == 'item' || option.constructor.name == 'technology') {
                 newLabel.innerHTML = option.kind;
@@ -622,7 +631,7 @@ function* runGame() {
         let location = playerShip.city.cityName;
         let inventory = itemArrayToString(playerShip.inventory);
         let pointString = points.toString();
-        let technologies = itemArrayToString(playerShip.techs);
+        let technologies = itemArrayToString(playerShip.technologies);
         
         // change the footer
         document.getElementById("goldText").innerHTML = "Gold: " + gold;
@@ -770,7 +779,7 @@ function* runGame() {
                             amplifiedStock.push(thing);
                         }
                     }
-                    for (let tech of playerShip.city.techs) {
+                    for (let tech of playerShip.city.technologies) {
                         amplifiedStock.push(tech);
                     }
 
