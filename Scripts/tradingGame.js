@@ -1306,10 +1306,10 @@ function buttonClick() {
             }
         }
 
-        if (!hasCheckboxes) {
+        if (isOneSelected) {
+                        gameRunner.next();
+        } else if (!hasCheckboxes) {
             sectionText.innerHTML = "&rarr;&rarr; No checkboxes available! &rarr;&rarr;";
-        } else if (isOneSelected) {
-            gameRunner.next();
         } else {
             sectionText.innerHTML = "&rarr;&rarr; Please select at least one! &rarr;&rarr;";
         }
