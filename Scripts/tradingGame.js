@@ -926,6 +926,11 @@ function* runGame() {
                 
 
                 } else if (playerActionChoice == "Sell") {
+                    if (playerShip.inventory.length == 0) {
+                        manageText("You don't have any items on your ship to sell!");
+                        yield;
+                        continue;
+                    }
                     // get the item that the player wants to sell
                     askOptions(`Alright! Let's see what  ${playerShip.city.merchant} will pay...<br>`+
                         "Choose an item that you would like to sell.", playerShip.inventory, true
