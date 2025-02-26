@@ -926,6 +926,11 @@ function* runGame() {
                 
 
                 } else if (playerActionChoice == "Sell") {
+                    if (playerShip.inventory.length == 0) {
+                        manageText("You don't have any items on your ship to sell!");
+                        yield;
+                        continue;
+                    }
                     // get the item that the player wants to sell
                     askOptions(`Alright! Let's see what  ${playerShip.city.merchant} will pay...<br>`+
                         "Choose an item that you would like to sell.", playerShip.inventory, true
@@ -1290,35 +1295,22 @@ function buttonClick() {
         } else {
             sectionText.innerHTML = "&darr;&darr;&darr; Please actually type something! &darr;&darr;&darr;";
         }
-            
+    
     // if we're looking for a choice, make sure that we actually selected something
-    // unless theres no checkboxes big boy
-    // or choice box whatever radio buttons
     } else if (desiredInputType == 'choice') {
         let isOneSelected = false;
-        let hasCheckboxes = false;
-    
-        const optionBox = document.getElementById("optionBox");
-        if (optionBox) {
-            for (let option of optionBox.children) {
-                if (option.type === "checkbox") or (option.type === "radio") {
-                    hasCheckboxes = true; // found one i think
-                    if (option.checked) {
-                        isOneSelected = true;
-                        break;
-                    }
-                }
+        for (let option of document.getElementById("optionBox").childNodes) {
+            if (option.checked) {
+                isOneSelected = true;
+                break;
             }
         }
-    
+
         if (isOneSelected) {
             gameRunner.next();
-        } else if (!hasCheckboxes) {
-            sectionText.innerHTML = "&rarr;&rarr; there arent any checkboxes stupid idiot 😡😡 &rarr;&rarr;";
-        } else if (!isOneSelected) {
+        } else {
             sectionText.innerHTML = "&rarr;&rarr; Please select at least one! &rarr;&rarr;";
         }
-    }
 
     // why does this exist? IDK, but if I make trades more complex in the future it could be helpful. 
     // Right now it is the same as desiredInputType='number'
