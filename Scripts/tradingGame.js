@@ -1301,7 +1301,7 @@ function buttonClick() {
         const optionBox = document.getElementById("optionBox");
         if (optionBox) {
             for (let option of optionBox.children) {
-                if (option.type === "radio") {
+                if (option.type === "checkbox") or (option.type === "radio") {
                     hasCheckboxes = true; // found one i think
                     if (option.checked) {
                         isOneSelected = true;
@@ -1315,7 +1315,7 @@ function buttonClick() {
             gameRunner.next();
         } else if (!hasCheckboxes) {
             sectionText.innerHTML = "&rarr;&rarr; there arent any checkboxes stupid idiot 😡😡 &rarr;&rarr;";
-        } else {
+        } else if (!isOneSelected) {
             sectionText.innerHTML = "&rarr;&rarr; Please select at least one! &rarr;&rarr;";
         }
     }
