@@ -737,6 +737,7 @@ function* runGame() {
     }
     
     // let the game begin!
+    // IVE PLAYED THESE GAMES BEFORE!!
     
     while (playing) {
         // we do something slightly different based on if we're in our homeland or not. It would be too painful
@@ -1346,10 +1347,48 @@ textInput.addEventListener('keypress', function(event) {
 });
 
 let homelandInfoButton = document.getElementById("homelandButton");
-homelandInfoButton.addEventListener("click", ()=>{
-    window.alert(`Here's a little info on your homeland:\nHomeland: ${playerShipHomeland.cityName}\nStock: [${playerShipHomeland.stock}]\n`+
-        `Desired Items: [${playerShipHomeland.desired}]`)
+let popupContent = document.getElementById("popup-content"); 
+let popup = document.getElementById("popup");
+let popupText = document.getElementById("popup-text");
+let closeBtn = document.getElementById("close-btn");
+
+homelandInfoButton.addEventListener("click", () => {
+    // make it actually readable MATTHEW yes this is kinda passive aggressive and i could care less
+    const stockList = playerShipHomeland.stock.join(', ');
+    const desiredList = playerShipHomeland.desired.join(', ');
+
+    // i made the message better
+    const message = `
+        Here's a little info on your homeland:<br><br>
+        
+        Homeland: ${playerShipHomeland.cityName}<br><br>
+        
+        Stock: ${stockList}<br><br>
+        
+        Desired Items: ${desiredList}
+    `;
+    
+    // set text with html because normal content doesnt have formatting
+    popupText.innerHTML = message;
+    popup.style.display = "flex";  // pop up
+
+    setTimeout(() => {
+        popup.style.opacity = 1; 
+        popupContent.style.opacity = 1;
+    }, 2); // wait, they dont love you like i love you
 });
+
+// this is self explanatory
+closeBtn.addEventListener("click", () => {
+    // start fade yayayayay
+    popup.style.opacity = 0;  // fade
+    popupContent.style.opacity = 0;  // fade 2: electric boogaloo 
+    
+    setTimeout(() => {
+        popup.style.display = "none"; // adios
+    }, 250); // wait to hide
+});
+
 
 gameRunner.next();
 console.log("OK! Game start!");
