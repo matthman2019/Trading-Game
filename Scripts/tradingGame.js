@@ -1301,7 +1301,7 @@ function buttonClick() {
         const optionBox = document.getElementById("optionBox");
         if (optionBox) {
             for (let option of optionBox.children) {
-                if (option.type === "checkbox") {
+                if (option.type === "radio") {
                     hasCheckboxes = true; // found one i think
                     if (option.checked) {
                         isOneSelected = true;
