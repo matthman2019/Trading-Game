@@ -1294,14 +1294,21 @@ function buttonClick() {
     // if we're looking for a choice, make sure that we actually selected something
     } else if (desiredInputType == 'choice') {
         let isOneSelected = false;
+        let hasCheckboxes = false;
+        
         for (let option of document.getElementById("optionBox").childNodes) {
-            if (option.checked) {
-                isOneSelected = true;
-                break;
+            if (option.type === "checkbox") {
+                hasCheckboxes = true; // Found at least one checkbox
+                if (option.checked) {
+                    isOneSelected = true;
+                    break;
+                }
             }
         }
 
-        if (isOneSelected) {
+        if (!hasCheckboxes) {
+            sectionText.innerHTML = "&rarr;&rarr; No checkboxes available! &rarr;&rarr;";
+        } else if (isOneSelected) {
             gameRunner.next();
         } else {
             sectionText.innerHTML = "&rarr;&rarr; Please select at least one! &rarr;&rarr;";
