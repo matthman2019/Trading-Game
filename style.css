@@ -39,6 +39,7 @@ aside {
 	height: 80%;
 	float: right;
 	overflow: auto;
+	padding: 5px;
 }
 
 footer {
