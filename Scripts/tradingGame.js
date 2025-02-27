@@ -198,6 +198,20 @@ function checkForCookie(cookieName) {
     }
 }
 
+// i think this fits best in gameData
+// theme changer
+document.addEventListener("DOMContentLoaded", function () {
+    // if the cookie doesnt exist then add it
+    if (!checkForCookie("theme")) {
+        setCookie("theme", "classic"); // default to classic
+    }
+
+    // retrieve theme
+    let theme = getCookie("theme");
+
+    // append the class to the body element so like classic would be classic-theme and so on
+    document.body.classList.add(`${theme}-theme`);
+});
 
 
 // Chrome won't let me export or import while testing, unfortunately.
