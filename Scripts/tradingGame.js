@@ -650,7 +650,11 @@ function* runGame() {
         // change the footer
         document.getElementById("goldText").innerHTML = "Gold: " + gold;
         document.getElementById("locationText").innerHTML = "Location: " + location;
-        document.getElementById("inventoryText").innerHTML = "Inventory: " + inventory;
+        if (inventory === "") {
+            document.getElementById("inventoryText").innerHTML = "Inventory: Empty";
+        } else {
+                document.getElementById("inventoryText").innerHTML = "Inventory: " + inventory;
+        }
         document.getElementById("pointText").innerHTML = "Points: " + pointString;
 
         // update game save (in cookies)
