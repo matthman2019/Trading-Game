@@ -635,6 +635,31 @@ function* runGame() {
         return returnArray;
     }
 
+    // inventory formatter
+    // ex: Silver, Silver turns into Silver x2
+    function formatInventory(inventory) {
+        // split inventory into actual list or whatever it is in javascript
+        let items = inventory.split(", ");
+        
+        let itemCount = {};
+    
+        // count occurrences 
+        items.forEach(item => {
+            itemCount[item] = (itemCount[item] || 0) + 1;
+        });
+    
+        // array time yay
+        let formattedInventory = [];
+    
+        // loop format
+        for (let item in itemCount) {
+            formattedInventory.push(`${item} x${itemCount[item]}`);
+        }
+    
+        // return formatted inventory
+        return formattedInventory.join(", ");
+    }
+    
     // manage the footer on the bottom of the screen (update gold, inventory, etc)
     // this also manages cookies.
     function manageFooter(playerShip) {
@@ -653,7 +678,9 @@ function* runGame() {
         if (inventory === "") {
             document.getElementById("inventoryText").innerHTML = "Inventory: Empty";
         } else {
-                document.getElementById("inventoryText").innerHTML = "Inventory: " + inventory;
+            // format inventory
+            let formatted = formatInventory(inventory);
+            document.getElementById("inventoryText").innerHTML = "Inventory: " + formatted;
         }
         document.getElementById("pointText").innerHTML = "Points: " + pointString;
 
