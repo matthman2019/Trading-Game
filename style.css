@@ -194,7 +194,6 @@ footer {
     display: none;
     justify-content: center;
     align-items: center;
-    transition: opacity 0.25s ease;
 }
 
 .popup-content {
