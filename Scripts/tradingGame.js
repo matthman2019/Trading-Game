@@ -198,6 +198,20 @@ function checkForCookie(cookieName) {
     }
 }
 
+// i think this fits best in gameData
+// theme changer
+document.addEventListener("DOMContentLoaded", function () {
+    // if the cookie doesnt exist then add it
+    if (!checkForCookie("theme")) {
+        setCookie("theme", "classic"); // default to classic
+    }
+
+    // retrieve theme
+    let theme = getCookie("theme");
+
+    // append the class to the body element so like classic would be classic-theme and so on
+    document.body.classList.add(`${theme}-theme`);
+});
 
 
 // Chrome won't let me export or import while testing, unfortunately.
@@ -621,6 +635,44 @@ function* runGame() {
         return returnArray;
     }
 
+    // inventory formatter
+    // ex: Silver, Silver turns into Silver x2
+    function formatInventory(inventory) {
+        // split inventory into actual list or whatever it is in javascript
+        let items = inventory.split(", ");
+        
+        let itemCount = {};
+    
+        // count occurrences 
+        items.forEach(item => {
+            itemCount[item] = (itemCount[item] || 0) + 1;
+        });
+    
+        // array time yay
+        let formattedInventory = [];
+    
+         // loop format
+        for (let item in itemCount) {
+            let count = itemCount[item];
+            
+            // remove plural if theres only one item
+            let singularItem = item;
+            if (count === 1 && singularItem.endsWith('s')) {
+                singularItem = singularItem.slice(0, -1); // remove last letter
+            }
+            
+            // add item to list
+            if (count === 1) {
+                formattedInventory.push(`${singularItem} x1`);
+            } else {
+                formattedInventory.push(`${singularItem} x${count}`);
+            }
+        }
+    
+        // return formatted inventory
+        return formattedInventory.join(", ");
+    }
+    
     // manage the footer on the bottom of the screen (update gold, inventory, etc)
     // this also manages cookies.
     function manageFooter(playerShip) {
@@ -636,7 +688,13 @@ function* runGame() {
         // change the footer
         document.getElementById("goldText").innerHTML = "Gold: " + gold;
         document.getElementById("locationText").innerHTML = "Location: " + location;
-        document.getElementById("inventoryText").innerHTML = "Inventory: " + inventory;
+        if (inventory === "") {
+            document.getElementById("inventoryText").innerHTML = "Inventory: Empty";
+        } else {
+            // format inventory
+            let formatted = formatInventory(inventory);
+            document.getElementById("inventoryText").innerHTML = "Inventory: " + formatted;
+        }
         document.getElementById("pointText").innerHTML = "Points: " + pointString;
 
         // update game save (in cookies)
