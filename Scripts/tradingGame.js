@@ -651,9 +651,22 @@ function* runGame() {
         // array time yay
         let formattedInventory = [];
     
-        // loop format
+         // loop format
         for (let item in itemCount) {
-            formattedInventory.push(`${item} x${itemCount[item]}`);
+            let count = itemCount[item];
+            
+            // remove plural if theres only one item
+            let singularItem = item;
+            if (count === 1 && singularItem.endsWith('s')) {
+                singularItem = singularItem.slice(0, -1); // remove last letter
+            }
+            
+            // add item to list
+            if (count === 1) {
+                formattedInventory.push(`${singularItem} x1`);
+            } else {
+                formattedInventory.push(`${singularItem} x${count}`);
+            }
         }
     
         // return formatted inventory
